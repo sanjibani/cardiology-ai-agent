@@ -1,0 +1,144 @@
+name: Security and Deployment
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security-check:
+    runs-on: ubuntu-latest
+    name: Security Scan & API Protection
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install bandit safety cryptography
+        
+    - name: Run security scan
+      run: |
+        echo "🔍 Running security scan..."
+        
+        # Check for common security issues
+        bandit -r . -x tests/ || true
+        
+        # Check for known vulnerabilities
+        safety check || true
+        
+    - name: Verify API key protection
+      run: |
+        echo "🔐 Checking API key protection..."
+        
+        # Check for actual OpenAI API keys (starts with sk-)
+        if grep -r "sk-[a-zA-Z0-9]\{32,\}" --exclude-dir=.git --exclude-dir=.encrypted --exclude-dir=node_modules .; then
+          echo "❌ SECURITY ALERT: Real API keys found in code!"
+          echo "Please encrypt your API keys using: python scripts/secure_env.py --encrypt .env"
+          exit 1
+        fi
+        
+        # Check for other API key patterns
+        if grep -r "OPENAI_API_KEY=sk-" --exclude-dir=.git --exclude-dir=.encrypted .; then
+          echo "❌ SECURITY ALERT: Unencrypted OpenAI API key found!"
+          exit 1
+        fi
+        
+        echo "✅ No exposed API keys found"
+        
+    - name: Verify encryption system
+      run: |
+        echo "🔧 Verifying encryption system..."
+        
+        if [ -f "scripts/secure_env.py" ]; then
+          python scripts/secure_env.py --verify-setup
+          echo "✅ Encryption system verified"
+        else
+          echo "⚠️  Encryption system not found"
+        fi
+        
+    - name: Check project structure
+      run: |
+        echo "📁 Verifying project structure..."
+        
+        # Check required directories
+        required_dirs=("agents" "tools" "models" "data" "templates" "static" "scripts")
+        for dir in "${required_dirs[@]}"; do
+          if [ -d "$dir" ]; then
+            echo "✅ $dir/ exists"
+          else
+            echo "❌ $dir/ missing"
+          fi
+        done
+        
+    - name: Test application startup
+      run: |
+        echo "🚀 Testing application startup..."
+        
+        # Create minimal test environment
+        cat > .env.test << 'EOF'
+OPENAI_API_KEY=test-key-for-startup-check
+API_ENVIRONMENT=test
+LOG_LEVEL=INFO
+HOST=127.0.0.1
+PORT=8000
+RELOAD=false
+EOF
+        
+        # Test import and basic startup
+        python -c "
+import sys
+sys.path.append('.')
+try:
+    from main import app
+    print('✅ Application imports successfully')
+except Exception as e:
+    print(f'❌ Import error: {e}')
+    sys.exit(1)
+"
+        
+        rm .env.test
+        
+  documentation-check:
+    runs-on: ubuntu-latest
+    name: Documentation & Links
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check documentation
+      run: |
+        echo "📚 Checking documentation..."
+        
+        # Check if README exists and has required sections
+        if [ -f "README.md" ]; then
+          echo "✅ README.md exists"
+          
+          required_sections=("Installation" "Usage" "API" "Security")
+          for section in "${required_sections[@]}"; do
+            if grep -q "## $section" README.md; then
+              echo "✅ $section section found"
+            else
+              echo "⚠️  $section section missing"
+            fi
+          done
+        else
+          echo "❌ README.md missing"
+        fi
+        
+        # Check for architecture documentation
+        if [ -f "TECHNICAL_ARCHITECTURE.md" ]; then
+          echo "✅ Technical architecture documented"
+        else
+          echo "⚠️  Technical architecture documentation missing"
+        fi
