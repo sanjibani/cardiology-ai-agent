@@ -24,103 +24,58 @@ A sophisticated multi-agent system built with **LangGraph** and **LangChain** fo
 
 ## 🏗️ System Architecture
 
-```mermaid
-graph TB
-    subgraph "Frontend Interfaces"
-        A[Landing Page<br/>localhost:8000]
-        B[Hospital Dashboard<br/>localhost:8000/hospital]
-        C[Patient Portal<br/>localhost:8000/patient]
-        D[Doctor Interface<br/>localhost:8000/doctor]
-        E[Emergency Triage<br/>localhost:8000/emergency]
-    end
-    
-    subgraph "FastAPI Backend"
-        F[Main Application<br/>main.py]
-        G[Static Files<br/>/static/*]
-        H[Templates<br/>/templates/*]
-    end
-    
-    subgraph "API Endpoints"
-        I[GET /health]
-        J[POST /chat]
-        K[POST /triage]
-        L[POST /appointment]
-        M[GET /patient/{id}]
-        N[GET /patient/{id}/appointments]
-        O[GET /docs - Swagger UI]
-    end
-    
-    subgraph "LangGraph Multi-Agent Workflow"
-        P[Supervisor Agent<br/>Query Routing]
-        Q[Triage Agent<br/>Symptom Assessment]
-        R[Appointment Agent<br/>Scheduling]
-        S[Virtual Assistant<br/>Patient Education]
-        T[Clinical Docs Agent<br/>Documentation]
-    end
-    
-    subgraph "AI & Tools"
-        U[OpenAI GPT-4<br/>Language Model]
-        V[Patient Lookup Tool]
-        W[Appointment System]
-        X[Knowledge Base]
-        Y[Emergency Escalation]
-    end
-    
-    subgraph "Data Layer"
-        Z[Patient Data<br/>sample_patient_data.json]
-        AA[Medical Knowledge<br/>cardiology_knowledge_base.json]
-        BB[State Management<br/>LangGraph State]
-    end
-    
-    A --> F
-    B --> F
-    C --> F
-    D --> F
-    E --> F
-    
-    F --> G
-    F --> H
-    F --> I
-    F --> J
-    F --> K
-    F --> L
-    F --> M
-    F --> N
-    F --> O
-    
-    J --> P
-    K --> P
-    L --> P
-    
-    P --> Q
-    P --> R
-    P --> S
-    P --> T
-    
-    Q --> U
-    R --> U
-    S --> U
-    T --> U
-    
-    Q --> V
-    Q --> Y
-    R --> W
-    S --> X
-    T --> V
-    
-    V --> Z
-    W --> Z
-    X --> AA
-    Y --> BB
-    
-    style A fill:#e1f5fe
-    style B fill:#e3f2fd
-    style C fill:#e8f5e8
-    style D fill:#f3e5f5
-    style E fill:#ffebee
-    style P fill:#fff3e0
-    style U fill:#e8eaf6
+### 📊 **Architecture Overview**
+
 ```
+┌─────────────────────────────────────────────────────────────────┐
+│                    🌐 Frontend Layer                            │
+├─────────────────────────────────────────────────────────────────┤
+│  🏠 Landing     🏥 Hospital     👤 Patient     👨‍⚕️ Doctor      🚨 Emergency  │
+│   (Port 8000)   Dashboard      Portal        Interface      Triage     │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+┌─────────────────────────▼───────────────────────────────────────┐
+│                   ⚡ FastAPI Backend                            │
+├─────────────────────────────────────────────────────────────────┤
+│  📄 Static Files  │  🎨 Templates  │  📡 API Endpoints            │
+│  /static/*        │  /templates/*  │  /health, /chat, /triage     │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+┌─────────────────────────▼───────────────────────────────────────┐
+│                🤖 LangGraph Multi-Agent System                  │
+├─────────────────────────────────────────────────────────────────┤
+│  🎯 Supervisor  │  🔍 Triage   │  📅 Appointment │  💬 Virtual    │
+│    Agent        │    Agent     │     Agent       │   Assistant   │
+│  (Routing)      │ (Assessment) │  (Scheduling)   │  (Education)  │
+│                 │              │                 │               │
+│                 📋 Clinical Documentation Agent                  │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+┌─────────────────────────▼───────────────────────────────────────┐
+│                    🧠 AI & Tools Layer                         │
+├─────────────────────────────────────────────────────────────────┤
+│  🤖 OpenAI GPT-4  │  🔍 Patient    │  📚 Knowledge  │  🚨 Emergency │
+│    Language Model │    Lookup      │    Base        │   Escalation │
+│                   │    Tool        │    Search      │   System     │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+┌─────────────────────────▼───────────────────────────────────────┐
+│                      💾 Data Layer                             │
+├─────────────────────────────────────────────────────────────────┤
+│  👥 Patient Data     │  🏥 Medical Knowledge  │  📊 State       │
+│  (JSON Database)     │  (Cardiology KB)       │  Management     │
+│                      │                        │  (LangGraph)    │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 🔄 **Workflow Process**
+
+1. **User Access** → Web interface based on role (Patient/Doctor/Hospital/Emergency)
+2. **Request Processing** → FastAPI backend handles HTTP requests  
+3. **Agent Routing** → Supervisor agent determines appropriate specialist agent
+4. **AI Processing** → Specialist agents use GPT-4 and domain tools
+5. **Data Integration** → Access patient records and medical knowledge base
+6. **Response Generation** → Structured output delivered to user interface
 
 ## 🚀 Quick Start
 
