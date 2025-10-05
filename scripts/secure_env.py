@@ -4,17 +4,19 @@ Automated API Key Protection System
 Encrypts/decrypts sensitive environment files for the Cardiology AI project
 """
 
-import os
-import sys
-import base64
-import json
 import argparse
+import base64
+import getpass
+import json
+import os
 import re
+import sys
 from pathlib import Path
+
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-import getpass
+
 
 class SecureEnvManager:
     def __init__(self, project_root=None):
