@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardiology AI Multi-Agent System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-white to-green-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b-4 border-blue-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-heartbeat text-3xl text-blue-600 mr-3"></i>
+                    <h1 class="text-xl font-bold text-gray-800">Cardiology AI Multi-Agent System</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/docs" class="text-blue-600 hover:text-blue-800">API Docs</a>
+                    <span id="systemStatus" class="bg-green-500 text-white px-3 py-1 rounded-full text-sm">System Online</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <!-- Hero Section -->
+        <div class="text-center mb-16">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">
+                AI-Powered Cardiology Care System
+            </h1>
+            <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                Advanced multi-agent AI system for medical triage, patient care, appointment management, 
+                and clinical documentation. Powered by LangGraph and OpenAI GPT-4.
+            </p>
+            <div class="flex justify-center space-x-4">
+                <div class="bg-white rounded-lg shadow p-4">
+                    <i class="fas fa-brain text-2xl text-blue-600 mb-2"></i>
+                    <p class="text-sm font-medium">AI-Powered</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-4">
+                    <i class="fas fa-users text-2xl text-green-600 mb-2"></i>
+                    <p class="text-sm font-medium">Multi-Agent</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-4">
+                    <i class="fas fa-shield-alt text-2xl text-purple-600 mb-2"></i>
+                    <p class="text-sm font-medium">HIPAA Ready</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-4">
+                    <i class="fas fa-clock text-2xl text-orange-600 mb-2"></i>
+                    <p class="text-sm font-medium">24/7 Available</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Interface Selection -->
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold text-center text-gray-900 mb-8">Select Your Interface</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Hospital Dashboard -->
+                <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+                    <div class="bg-blue-600 p-6 text-center">
+                        <i class="fas fa-hospital text-4xl text-white mb-4"></i>
+                        <h3 class="text-xl font-bold text-white">Hospital Dashboard</h3>
+                        <p class="text-blue-100 text-sm">For Administrators & Staff</p>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-2 text-sm text-gray-600 mb-6">
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Patient Overview</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Department Status</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Emergency Alerts</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Resource Management</li>
+                        </ul>
+                        <a href="/hospital" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors block text-center">
+                            Access Dashboard
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Patient Portal -->
+                <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+                    <div class="bg-green-600 p-6 text-center">
+                        <i class="fas fa-user text-4xl text-white mb-4"></i>
+                        <h3 class="text-xl font-bold text-white">Patient Portal</h3>
+                        <p class="text-green-100 text-sm">For Individual Patients</p>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-2 text-sm text-gray-600 mb-6">
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Symptom Assessment</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>AI Health Assistant</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Appointment Booking</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Medical Records</li>
+                        </ul>
+                        <a href="/patient" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg transition-colors block text-center">
+                            Enter Portal
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Doctor Interface -->
+                <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+                    <div class="bg-purple-600 p-6 text-center">
+                        <i class="fas fa-user-md text-4xl text-white mb-4"></i>
+                        <h3 class="text-xl font-bold text-white">Doctor Interface</h3>
+                        <p class="text-purple-100 text-sm">For Healthcare Providers</p>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-2 text-sm text-gray-600 mb-6">
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Patient Consultation</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>AI Clinical Assistant</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Clinical Notes</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Schedule Management</li>
+                        </ul>
+                        <a href="/doctor" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg transition-colors block text-center">
+                            Access Interface
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Emergency Triage -->
+                <div class="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+                    <div class="bg-red-600 p-6 text-center">
+                        <i class="fas fa-ambulance text-4xl text-white mb-4"></i>
+                        <h3 class="text-xl font-bold text-white">Emergency Triage</h3>
+                        <p class="text-red-100 text-sm">For Emergency Staff</p>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-2 text-sm text-gray-600 mb-6">
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Rapid Assessment</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Priority Classification</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Emergency Protocols</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Live Monitoring</li>
+                        </ul>
+                        <a href="/emergency" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-lg transition-colors block text-center">
+                            Access Triage
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Features -->
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold text-center text-gray-900 mb-8">AI Agent Capabilities</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-stethoscope text-4xl text-red-500 mb-4"></i>
+                        <h3 class="text-xl font-bold text-gray-800">Intelligent Triage</h3>
+                    </div>
+                    <ul class="space-y-2 text-gray-600">
+                        <li>• Emergency symptom detection</li>
+                        <li>• Severity scoring & prioritization</li>
+                        <li>• Automatic escalation protocols</li>
+                        <li>• Real-time risk assessment</li>
+                    </ul>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-robot text-4xl text-blue-500 mb-4"></i>
+                        <h3 class="text-xl font-bold text-gray-800">Virtual Assistant</h3>
+                    </div>
+                    <ul class="space-y-2 text-gray-600">
+                        <li>• 24/7 patient support</li>
+                        <li>• Medication guidance</li>
+                        <li>• Health education</li>
+                        <li>• Appointment assistance</li>
+                    </ul>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-file-medical text-4xl text-green-500 mb-4"></i>
+                        <h3 class="text-xl font-bold text-gray-800">Clinical Documentation</h3>
+                    </div>
+                    <ul class="space-y-2 text-gray-600">
+                        <li>• Automated report generation</li>
+                        <li>• Clinical note assistance</li>
+                        <li>• Medical record management</li>
+                        <li>• Regulatory compliance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technical Information -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-bold text-center text-gray-900 mb-6">System Architecture</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 text-center">
+                <div class="p-4">
+                    <i class="fas fa-brain text-3xl text-blue-600 mb-2"></i>
+                    <h4 class="font-bold text-gray-800">LangGraph</h4>
+                    <p class="text-sm text-gray-600">Multi-agent orchestration</p>
+                </div>
+                <div class="p-4">
+                    <i class="fas fa-link text-3xl text-green-600 mb-2"></i>
+                    <h4 class="font-bold text-gray-800">LangChain</h4>
+                    <p class="text-sm text-gray-600">AI agent framework</p>
+                </div>
+                <div class="p-4">
+                    <i class="fas fa-robot text-3xl text-purple-600 mb-2"></i>
+                    <h4 class="font-bold text-gray-800">OpenAI GPT-4</h4>
+                    <p class="text-sm text-gray-600">Language model</p>
+                </div>
+                <div class="p-4">
+                    <i class="fas fa-server text-3xl text-orange-600 mb-2"></i>
+                    <h4 class="font-bold text-gray-800">FastAPI</h4>
+                    <p class="text-sm text-gray-600">REST API backend</p>
+                </div>
+                <div class="p-4">
+                    <i class="fas fa-desktop text-3xl text-red-600 mb-2"></i>
+                    <h4 class="font-bold text-gray-800">Web UI</h4>
+                    <p class="text-sm text-gray-600">Responsive interface</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-gray-600">
+            <p>© 2025 Cardiology AI Multi-Agent System | Powered by Advanced AI Technology</p>
+            <p class="text-sm mt-2">Built with LangGraph, LangChain, and OpenAI GPT-4</p>
+        </div>
+    </div>
+
+    <script>
+        // Simple system health check
+        async function checkSystemHealth() {
+            try {
+                const response = await fetch('/health');
+                const statusElement = document.getElementById('systemStatus');
+                
+                if (response.ok) {
+                    statusElement.textContent = 'System Online';
+                    statusElement.className = 'bg-green-500 text-white px-3 py-1 rounded-full text-sm';
+                } else {
+                    throw new Error('Health check failed');
+                }
+            } catch (error) {
+                const statusElement = document.getElementById('systemStatus');
+                statusElement.textContent = 'System Offline';
+                statusElement.className = 'bg-red-500 text-white px-3 py-1 rounded-full text-sm';
+            }
+        }
+
+        // Check system health on page load
+        document.addEventListener('DOMContentLoaded', checkSystemHealth);
+    </script>
+</body>
+</html>

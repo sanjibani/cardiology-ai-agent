@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardiology AI Multi-Agent System</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/styles.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="medical-gradient text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-heartbeat text-3xl pulse-animation"></i>
+                    <h1 class="text-2xl font-bold">Cardiology AI System</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="systemStatus" class="bg-green-500 px-3 py-1 rounded-full text-sm">System Online</span>
+                    <button id="emergencyBtn" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-colors">
+                        <i class="fas fa-phone"></i> Emergency
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-md card-hover">
+                <div class="flex items-center">
+                    <div class="bg-blue-100 p-3 rounded-full">
+                        <i class="fas fa-user-md text-blue-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500 text-sm">Active Patients</p>
+                        <p class="text-2xl font-bold text-gray-800">4</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-md card-hover">
+                <div class="flex items-center">
+                    <div class="bg-green-100 p-3 rounded-full">
+                        <i class="fas fa-calendar-check text-green-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500 text-sm">Available Slots</p>
+                        <p class="text-2xl font-bold text-gray-800" id="availableSlots">12</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-md card-hover">
+                <div class="flex items-center">
+                    <div class="bg-yellow-100 p-3 rounded-full">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500 text-sm">Urgent Cases</p>
+                        <p class="text-2xl font-bold text-gray-800" id="urgentCases">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-md card-hover">
+                <div class="flex items-center">
+                    <div class="bg-red-100 p-3 rounded-full">
+                        <i class="fas fa-heartbeat text-red-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500 text-sm">AI Assessments</p>
+                        <p class="text-2xl font-bold text-gray-800" id="assessmentCount">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column: Patient Interaction -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- AI Triage Interface -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-stethoscope text-blue-600 text-xl mr-3"></i>
+                        <h2 class="text-xl font-bold text-gray-800">AI Triage Assessment</h2>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Patient ID</label>
+                            <select id="patientId" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="P001">P001 - John Doe</option>
+                                <option value="P002">P002 - Jane Smith</option>
+                                <option value="P003">P003 - Robert Johnson</option>
+                                <option value="P004">P004 - Mary Wilson</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Describe your symptoms</label>
+                            <textarea id="symptomsInput" placeholder="I'm experiencing chest pain that started about an hour ago..." 
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 h-24"></textarea>
+                        </div>
+                        <button onclick="triageAssessment()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                            <i class="fas fa-search mr-2"></i>Start AI Assessment
+                        </button>
+                        <div id="triageResult" class="hidden"></div>
+                    </div>
+                </div>
+
+                <!-- Chat Interface -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-comments text-green-600 text-xl mr-3"></i>
+                        <h2 class="text-xl font-bold text-gray-800">Virtual Assistant Chat</h2>
+                    </div>
+                    <div id="chatMessages" class="h-64 overflow-y-auto bg-gray-50 p-4 rounded-lg mb-4 space-y-3">
+                        <div class="flex">
+                            <div class="bg-blue-500 text-white p-3 rounded-lg max-w-xs">
+                                <i class="fas fa-robot mr-2"></i>Hello! I'm your cardiology AI assistant. How can I help you today?
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <input type="text" id="chatInput" placeholder="Ask about medications, symptoms, or health advice..." 
+                            class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                            onkeypress="if(event.key==='Enter') sendMessage()">
+                        <button onclick="sendMessage()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Patient Info & Tools -->
+            <div class="space-y-6">
+                <!-- Patient Information -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-user-circle text-purple-600 text-xl mr-3"></i>
+                        <h2 class="text-xl font-bold text-gray-800">Patient Profile</h2>
+                    </div>
+                    <div id="patientInfo" class="space-y-3">
+                        <div class="animate-pulse">
+                            <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                            <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                            <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                        </div>
+                    </div>
+                    <button onclick="loadPatientData()" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg mt-4 transition-colors">
+                        <i class="fas fa-refresh mr-2"></i>Refresh Patient Data
+                    </button>
+                </div>
+
+                <!-- Appointment Booking -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-calendar-alt text-orange-600 text-xl mr-3"></i>
+                        <h2 class="text-xl font-bold text-gray-800">Schedule Appointment</h2>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Appointment Type</label>
+                            <select id="appointmentType" class="w-full p-3 border border-gray-300 rounded-lg">
+                                <option value="consultation">Routine Checkup</option>
+                                <option value="follow-up">Follow-up</option>
+                                <option value="procedure">Urgent Consultation</option>
+                                <option value="emergency">Emergency</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Preferred Date</label>
+                            <input type="date" id="appointmentDate" class="w-full p-3 border border-gray-300 rounded-lg">
+                        </div>
+                        <textarea id="appointmentNotes" placeholder="Additional notes or symptoms..." 
+                            class="w-full p-3 border border-gray-300 rounded-lg h-20"></textarea>
+                        <button onclick="bookAppointment()" class="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 px-4 rounded-lg transition-colors">
+                            <i class="fas fa-calendar-plus mr-2"></i>Book Appointment
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Quick Actions</h2>
+                    <div class="space-y-3">
+                        <button onclick="generateReport()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg text-left transition-colors">
+                            <i class="fas fa-file-medical mr-2"></i>Generate Clinical Report
+                        </button>
+                        <button onclick="checkMedications()" class="w-full bg-teal-600 hover:bg-teal-700 text-white py-2 px-4 rounded-lg text-left transition-colors">
+                            <i class="fas fa-pills mr-2"></i>Check Medications
+                        </button>
+                        <button onclick="viewHistory()" class="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg text-left transition-colors">
+                            <i class="fas fa-history mr-2"></i>View Medical History
+                        </button>
+                        <button onclick="viewAppointments()" class="w-full bg-pink-600 hover:bg-pink-700 text-white py-2 px-4 rounded-lg text-left transition-colors">
+                            <i class="fas fa-calendar mr-2"></i>View Appointments
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Modal -->
+    <div id="emergencyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-8 max-w-md mx-4 transform transition-all">
+            <div class="text-center">
+                <i class="fas fa-exclamation-triangle text-red-600 text-6xl mb-4 pulse-animation"></i>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Emergency Protocol</h2>
+                <p class="text-gray-600 mb-6">If this is a medical emergency, please call 911 immediately. This system is for informational purposes only.</p>
+                <div class="flex space-x-3">
+                    <button onclick="call911()" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-colors">
+                        <i class="fas fa-phone mr-2"></i>Call 911
+                    </button>
+                    <button onclick="closeEmergencyModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div id="reportModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-8 max-w-4xl mx-4 max-h-96 overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">Clinical Report</h2>
+                <button onclick="closeReportModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="reportContent" class="prose max-w-none">
+                <!-- Report content will be inserted here -->
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button onclick="downloadReport()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-download mr-2"></i>Download
+                </button>
+                <button onclick="closeReportModal()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-40">
+        <div class="bg-white rounded-xl p-8 text-center">
+            <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+            <p class="text-gray-700">Processing...</p>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

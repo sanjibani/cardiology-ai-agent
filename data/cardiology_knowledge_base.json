@@ -1,0 +1,100 @@
+{
+  "medications": {
+    "ACE_inhibitors": {
+      "common_names": ["lisinopril", "enalapril", "captopril", "benazepril"],
+      "purpose": "Lower blood pressure and reduce workload on the heart",
+      "side_effects": ["dry cough", "elevated potassium", "dizziness", "fatigue"],
+      "monitoring": ["blood pressure", "kidney function", "potassium levels"]
+    },
+    "beta_blockers": {
+      "common_names": ["metoprolol", "atenolol", "propranolol", "carvedilol"],
+      "purpose": "Slow heart rate, reduce blood pressure, decrease oxygen demand",
+      "side_effects": ["fatigue", "cold hands/feet", "depression", "sexual dysfunction"],
+      "monitoring": ["heart rate", "blood pressure", "blood sugar"]
+    },
+    "statins": {
+      "common_names": ["atorvastatin", "simvastatin", "rosuvastatin"],
+      "purpose": "Lower cholesterol to reduce cardiovascular risk",
+      "side_effects": ["muscle pain", "liver enzyme elevation", "digestive issues"],
+      "monitoring": ["cholesterol levels", "liver function tests"]
+    },
+    "aspirin": {
+      "purpose": "Cardiovascular protection, prevent blood clots",
+      "side_effects": ["stomach upset", "bleeding risk", "bruising"],
+      "monitoring": ["signs of bleeding", "stomach problems"]
+    }
+  },
+  "procedures": {
+    "echocardiogram": {
+      "description": "Ultrasound imaging of the heart",
+      "preparation": "No special preparation needed",
+      "duration": "30-60 minutes",
+      "what_to_expect": "Gel applied to chest, ultrasound probe moved around"
+    },
+    "stress_test": {
+      "description": "Test heart function during physical stress",
+      "preparation": "Avoid caffeine 24 hours before, wear comfortable shoes",
+      "duration": "60-90 minutes",
+      "what_to_expect": "Exercise on treadmill while monitoring heart"
+    },
+    "cardiac_catheterization": {
+      "description": "Invasive procedure to examine coronary arteries",
+      "preparation": "Fasting 6-8 hours, pre-procedure testing",
+      "duration": "30 minutes to 2+ hours",
+      "recovery": "4-6 hours bed rest, monitor insertion site"
+    }
+  },
+  "conditions": {
+    "hypertension": {
+      "description": "High blood pressure",
+      "risk_factors": ["age", "family history", "obesity", "smoking"],
+      "lifestyle_changes": ["low sodium diet", "regular exercise", "weight management"],
+      "monitoring": "Regular blood pressure checks"
+    },
+    "coronary_artery_disease": {
+      "description": "Narrowing of coronary arteries",
+      "symptoms": ["chest pain", "shortness of breath", "fatigue"],
+      "risk_factors": ["smoking", "diabetes", "high cholesterol"],
+      "treatment_options": ["medications", "lifestyle changes", "procedures"]
+    },
+    "heart_failure": {
+      "description": "Heart's inability to pump blood effectively",
+      "symptoms": ["shortness of breath", "fatigue", "swelling", "weight gain"],
+      "management": ["medications", "dietary sodium restriction", "fluid monitoring"]
+    }
+  },
+  "lifestyle": {
+    "diet": {
+      "heart_healthy_foods": ["fish", "vegetables", "whole grains", "nuts"],
+      "foods_to_limit": ["saturated fats", "sodium", "added sugars"],
+      "portion_control": "Use smaller plates, eat slowly"
+    },
+    "exercise": {
+      "aerobic_recommendations": "150 minutes moderate activity per week",
+      "strength_training": "2 days per week",
+      "getting_started": "Start slowly, gradually increase intensity"
+    },
+    "smoking_cessation": {
+      "benefits": ["improved circulation", "reduced heart disease risk"],
+      "strategies": ["nicotine replacement", "counseling", "medications"]
+    }
+  },
+  "emergency_symptoms": {
+    "call_911_immediately": [
+      "severe chest pain or pressure",
+      "chest pain radiating to arm or jaw",
+      "sudden severe shortness of breath",
+      "loss of consciousness"
+    ],
+    "urgent_same_day": [
+      "new or worsening shortness of breath",
+      "palpitations lasting more than 30 minutes",
+      "leg swelling with breathing difficulty"
+    ],
+    "schedule_soon": [
+      "mild intermittent palpitations",
+      "fatigue with exertion",
+      "medication side effects"
+    ]
+  }
+}

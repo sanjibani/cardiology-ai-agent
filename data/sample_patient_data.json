@@ -1,0 +1,46 @@
+{
+  "P001": {
+    "patient_id": "P001",
+    "name": "John Doe",
+    "age": 58,
+    "conditions": ["hypertension", "type 2 diabetes"],
+    "medications": ["Lisinopril 10mg", "Metformin 500mg"],
+    "last_visit": "2025-09-15",
+    "risk_factors": ["smoking history", "family history of CAD"],
+    "allergies": ["penicillin"],
+    "emergency_contact": "555-0123"
+  },
+  "P002": {
+    "patient_id": "P002",
+    "name": "Jane Smith",
+    "age": 45,
+    "conditions": ["atrial fibrillation"],
+    "medications": ["Warfarin 5mg", "Metoprolol 50mg"],
+    "last_visit": "2025-10-01",
+    "risk_factors": ["family history of stroke"],
+    "allergies": [],
+    "emergency_contact": "555-0456"
+  },
+  "P003": {
+    "patient_id": "P003",
+    "name": "Robert Johnson",
+    "age": 72,
+    "conditions": ["heart failure", "coronary artery disease"],
+    "medications": ["Enalapril 10mg", "Atorvastatin 40mg", "Aspirin 81mg"],
+    "last_visit": "2025-09-28",
+    "risk_factors": ["previous MI", "diabetes"],
+    "allergies": ["sulfa drugs"],
+    "emergency_contact": "555-0789"
+  },
+  "P004": {
+    "patient_id": "P004",
+    "name": "Mary Wilson",
+    "age": 62,
+    "conditions": ["hypertension", "high cholesterol"],
+    "medications": ["Amlodipine 5mg", "Simvastatin 20mg"],
+    "last_visit": "2025-09-20",
+    "risk_factors": ["family history of heart disease", "sedentary lifestyle"],
+    "allergies": ["shellfish"],
+    "emergency_contact": "555-0321"
+  }
+}
