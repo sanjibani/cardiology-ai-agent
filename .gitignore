@@ -65,3 +65,18 @@ htmlcov/
 
 # Documentation
 docs/_build/
+# Environment files (will be encrypted)
+.env
+.env.local
+.env.production
+.env.staging
+
+# Encryption key (never commit this!)
+.encryption_key
+
+# Decrypted files in development
+*.env.decrypted
+
+# Screenshots (add when ready)
+# screenshots/*.png
+# screenshots/*.jpg
