@@ -499,6 +499,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] Machine learning model training interface
 - [ ] Population health analytics
 
+### screenshots from the app 
+
+<img width="1907" height="995" alt="image" src="https://github.com/user-attachments/assets/095efd76-b8c3-462a-a6ea-6ed5542dab46" />
+
+<img width="1863" height="861" alt="image" src="https://github.com/user-attachments/assets/c5bd763c-dd4e-4d39-96ee-b62d0503e754" />
+
+
+<img width="1311" height="856" alt="image" src="https://github.com/user-attachments/assets/eeffdf78-3bfa-4c7a-bac3-7f2c75caa2c8" />
+
+
+<img width="1465" height="857" alt="image" src="https://github.com/user-attachments/assets/0abaa31f-ac55-4ccc-8bae-00ece543edab" />
+
 ---
 
 **Built with ❤️ using LangGraph, LangChain, FastAPI, and OpenAI GPT-4**
