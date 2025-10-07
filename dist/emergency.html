@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Triage - CardioEmergency</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="./static/styles.css">
+</head>
+<body class="bg-gradient-to-br from-red-50 via-white to-orange-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b-4 border-red-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-ambulance text-3xl text-red-600 mr-3"></i>
+                    <h1 class="text-xl font-bold text-gray-800">CardioEmergency - Triage Station</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                        <span class="text-sm text-gray-600">LIVE MONITORING</span>
+                    </div>
+                    <a href="/" class="text-red-600 hover:text-red-800">Hospital Dashboard</a>
+                    <a href="./doctor.html" class="text-purple-600 hover:text-purple-800">Doctor Interface</a>
+                    <button class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                        <i class="fas fa-phone mr-2"></i>Call 911
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Demo Mode Notice -->
+    <div id="demo-notice" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm">
+                    <strong>Demo Mode:</strong> This is a static demo. For full functionality including AI processing, 
+                    please visit the <a href="https://github.com/sanjibani/cardiology-ai-agent" class="underline">GitHub repository</a> 
+                    to set up the complete system with API keys.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <!-- Emergency Status Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8 border-l-4 border-red-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-heartbeat text-red-500 mr-3"></i>
+                        Emergency Triage System
+                    </h2>
+                    <p class="text-gray-600">AI-Powered Emergency Assessment & Priority Management</p>
+                </div>
+                <div class="text-right">
+                    <div class="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                            <p class="text-2xl font-bold text-red-600" id="emergencyCount">3</p>
+                            <p class="text-xs text-gray-600">CRITICAL</p>
+                        </div>
+                        <div>
+                            <p class="text-2xl font-bold text-orange-600" id="urgentCount">7</p>
+                            <p class="text-xs text-gray-600">URGENT</p>
+                        </div>
+                        <div>
+                            <p class="text-2xl font-bold text-yellow-600" id="routineCount">12</p>
+                            <p class="text-xs text-gray-600">ROUTINE</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            <!-- Left Column - Triage Assessment -->
+            <div class="xl:col-span-2 space-y-6">
+                <!-- Quick Triage -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-triage text-red-500 mr-2"></i>
+                        Rapid Triage Assessment
+                    </h3>
+                    
+                    <!-- Patient Info Input -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Patient ID (Optional)</label>
+                            <input 
+                                type="text" 
+                                id="emergencyPatientId" 
+                                placeholder="P-001 or Walk-in"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                            >
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Chief Complaint</label>
+                            <select id="chiefComplaint" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500">
+                                <option value="">Select primary symptom...</option>
+                                <option value="chest-pain">Chest Pain</option>
+                                <option value="shortness-breath">Shortness of Breath</option>
+                                <option value="palpitations">Palpitations</option>
+                                <option value="syncope">Syncope/Fainting</option>
+                                <option value="cardiac-arrest">Cardiac Arrest</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Symptom Description -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Detailed Symptoms</label>
+                        <textarea 
+                            id="emergencySymptoms" 
+                            placeholder="Describe symptoms in detail: severity, duration, associated symptoms, onset..."
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                            rows="4"
+                        ></textarea>
+                    </div>
+
+                    <!-- Vital Signs Quick Input -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div>
+                            <label class="block text-xs text-gray-600 mb-1">BP (systolic)</label>
+                            <input type="number" placeholder="120" class="w-full p-2 border border-gray-300 rounded text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-600 mb-1">Heart Rate</label>
+                            <input type="number" placeholder="80" class="w-full p-2 border border-gray-300 rounded text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-600 mb-1">O2 Sat (%)</label>
+                            <input type="number" placeholder="98" class="w-full p-2 border border-gray-300 rounded text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-600 mb-1">Temp (°F)</label>
+                            <input type="number" placeholder="98.6" class="w-full p-2 border border-gray-300 rounded text-sm">
+                        </div>
+                    </div>
+
+                    <button 
+                        onclick="performEmergencyTriage()" 
+                        class="w-full bg-red-600 hover:bg-red-700 text-white py-4 px-6 rounded-lg text-lg font-bold transition-colors"
+                    >
+                        <i class="fas fa-heartbeat mr-2"></i>
+                        PERFORM AI TRIAGE ASSESSMENT
+                    </button>
+                </div>
+
+                <!-- Triage Results -->
+                <div id="triageResults" class="hidden bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-diagnoses text-blue-500 mr-2"></i>
+                        AI Triage Assessment Results
+                    </h3>
+                    <div id="triageContent">
+                        <!-- Results will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Active Emergency Cases -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-list text-orange-500 mr-2"></i>
+                        Active Emergency Cases
+                    </h3>
+                    <div class="space-y-3" id="activeCases">
+                        <div class="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-bold text-red-800">CRITICAL - Chest Pain</p>
+                                    <p class="text-sm text-red-600">Patient: Walk-in #003 | Age: 67</p>
+                                    <p class="text-sm text-red-600">Symptoms: Severe chest pain, sweating, nausea</p>
+                                    <p class="text-xs text-red-500">Assigned: Dr. Johnson | Room: Trauma 1</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="bg-red-600 text-white px-2 py-1 rounded-full text-xs">IMMEDIATE</span>
+                                    <p class="text-xs text-red-500 mt-1">2 min ago</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-orange-50 border-l-4 border-orange-500 rounded-lg">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-bold text-orange-800">URGENT - Arrhythmia</p>
+                                    <p class="text-sm text-orange-600">Patient: P-2045 | Age: 72</p>
+                                    <p class="text-sm text-orange-600">Symptoms: Irregular heartbeat, dizziness</p>
+                                    <p class="text-xs text-orange-500">Assigned: Dr. Smith | Room: ER 3</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="bg-orange-600 text-white px-2 py-1 rounded-full text-xs">30 MIN</span>
+                                    <p class="text-xs text-orange-500 mt-1">15 min ago</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-bold text-yellow-800">ROUTINE - Follow-up</p>
+                                    <p class="text-sm text-yellow-600">Patient: P-1234 | Age: 45</p>
+                                    <p class="text-sm text-yellow-600">Symptoms: Chest discomfort, anxiety</p>
+                                    <p class="text-xs text-yellow-500">Assigned: Dr. Davis | Room: ER 7</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="bg-yellow-600 text-white px-2 py-1 rounded-full text-xs">2 HRS</span>
+                                    <p class="text-xs text-yellow-500 mt-1">45 min ago</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Emergency Tools -->
+            <div class="space-y-6">
+                <!-- Quick Response -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-bolt text-yellow-500 mr-2"></i>
+                        Quick Response
+                    </h3>
+                    <div class="space-y-3">
+                        <button class="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-lg transition-colors">
+                            <i class="fas fa-phone mr-2"></i>
+                            Call Code Blue
+                        </button>
+                        <button class="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 px-4 rounded-lg transition-colors">
+                            <i class="fas fa-ambulance mr-2"></i>
+                            Request Transport
+                        </button>
+                        <button class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg transition-colors">
+                            <i class="fas fa-user-md mr-2"></i>
+                            Page Cardiologist
+                        </button>
+                        <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors">
+                            <i class="fas fa-bed mr-2"></i>
+                            Check Bed Availability
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Department Status -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-hospital text-blue-500 mr-2"></i>
+                        Department Status
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 bg-red-50 rounded">
+                            <span class="text-sm">Trauma Rooms</span>
+                            <span class="font-bold text-red-600">1/3 Available</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-orange-50 rounded">
+                            <span class="text-sm">ER Beds</span>
+                            <span class="font-bold text-orange-600">4/12 Available</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-green-50 rounded">
+                            <span class="text-sm">Cardiology Unit</span>
+                            <span class="font-bold text-green-600">8/15 Available</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-blue-50 rounded">
+                            <span class="text-sm">ICU</span>
+                            <span class="font-bold text-blue-600">2/8 Available</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- On-Call Staff -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-users text-green-500 mr-2"></i>
+                        On-Call Staff
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-2">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                                <span class="text-sm">Dr. Johnson</span>
+                            </div>
+                            <span class="text-xs text-gray-500">Cardiothoracic</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                                <span class="text-sm">Dr. Smith</span>
+                            </div>
+                            <span class="text-xs text-gray-500">Emergency</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                                <span class="text-sm">Dr. Davis</span>
+                            </div>
+                            <span class="text-xs text-gray-500">Cardiology</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                                <span class="text-sm">Dr. Wilson</span>
+                            </div>
+                            <span class="text-xs text-gray-500">Surgery</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emergency Protocols -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-clipboard-list text-purple-500 mr-2"></i>
+                        Emergency Protocols
+                    </h3>
+                    <div class="space-y-2">
+                        <button class="w-full text-left p-2 hover:bg-gray-50 rounded border">
+                            <i class="fas fa-heart text-red-500 mr-2"></i>
+                            <span class="text-sm">STEMI Protocol</span>
+                        </button>
+                        <button class="w-full text-left p-2 hover:bg-gray-50 rounded border">
+                            <i class="fas fa-lungs text-blue-500 mr-2"></i>
+                            <span class="text-sm">PE Protocol</span>
+                        </button>
+                        <button class="w-full text-left p-2 hover:bg-gray-50 rounded border">
+                            <i class="fas fa-brain text-purple-500 mr-2"></i>
+                            <span class="text-sm">Stroke Protocol</span>
+                        </button>
+                        <button class="w-full text-left p-2 hover:bg-gray-50 rounded border">
+                            <i class="fas fa-heartbeat text-orange-500 mr-2"></i>
+                            <span class="text-sm">Arrhythmia Protocol</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg text-center">
+            <i class="fas fa-spinner fa-spin text-3xl text-red-600 mb-4"></i>
+            <p class="text-gray-800">Performing emergency triage assessment...</p>
+        </div>
+    </div>
+
+    <script src="./static/emergency_triage.js"></script>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Dashboard - Cardiology AI System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="./static/styles.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-white to-green-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b-4 border-blue-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-hospital text-3xl text-blue-600 mr-3"></i>
+                    <h1 class="text-xl font-bold text-gray-800">CardioCare Hospital Dashboard</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="./patient.html" class="text-blue-600 hover:text-blue-800">Patient Portal</a>
+                    <a href="./doctor.html" class="text-blue-600 hover:text-blue-800">Doctor Interface</a>
+                    <a href="./emergency.html" class="text-red-600 hover:text-red-800">Emergency</a>
+                    <span id="systemStatus" class="bg-green-500 text-white px-3 py-1 rounded-full text-sm">System Online</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Demo Mode Notice -->
+    <div id="demo-notice" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm">
+                    <strong>Demo Mode:</strong> This is a static demo. For full functionality including AI processing, 
+                    please visit the <a href="https://github.com/sanjibani/cardiology-ai-agent" class="underline">GitHub repository</a> 
+                    to set up the complete system with API keys.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <!-- Hospital Overview -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Hospital Overview</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+                    <div class="flex items-center">
+                        <i class="fas fa-users text-blue-500 text-2xl mr-4"></i>
+                        <div>
+                            <p class="text-sm text-gray-600">Total Patients</p>
+                            <p class="text-2xl font-bold" id="totalPatients">1,247</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-2xl mr-4"></i>
+                        <div>
+                            <p class="text-sm text-gray-600">Emergency Cases</p>
+                            <p class="text-2xl font-bold text-red-600" id="emergencyCases">8</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
+                    <div class="flex items-center">
+                        <i class="fas fa-calendar text-orange-500 text-2xl mr-4"></i>
+                        <div>
+                            <p class="text-sm text-gray-600">Today's Appointments</p>
+                            <p class="text-2xl font-bold" id="todayAppointments">156</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+                    <div class="flex items-center">
+                        <i class="fas fa-user-md text-green-500 text-2xl mr-4"></i>
+                        <div>
+                            <p class="text-sm text-gray-600">Active Doctors</p>
+                            <p class="text-2xl font-bold" id="activeDoctors">24</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Department Status -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-bold mb-4 flex items-center">
+                    <i class="fas fa-heartbeat text-red-500 mr-2"></i>
+                    Cardiology Department Status
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center p-3 bg-green-50 rounded">
+                        <span>ICU Beds Available</span>
+                        <span class="font-bold text-green-600">12/20</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-yellow-50 rounded">
+                        <span>Surgery Rooms</span>
+                        <span class="font-bold text-yellow-600">3/6</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-blue-50 rounded">
+                        <span>Consultation Rooms</span>
+                        <span class="font-bold text-blue-600">8/15</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-bold mb-4 flex items-center">
+                    <i class="fas fa-chart-line text-blue-500 mr-2"></i>
+                    AI System Performance
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center p-3 bg-green-50 rounded">
+                        <span>Triage Assessments Today</span>
+                        <span class="font-bold text-green-600" id="triageCount">89</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-blue-50 rounded">
+                        <span>AI Accuracy Rate</span>
+                        <span class="font-bold text-blue-600">97.2%</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-purple-50 rounded">
+                        <span>Response Time Avg</span>
+                        <span class="font-bold text-purple-600">1.3s</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-bold mb-4 flex items-center">
+                    <i class="fas fa-clock text-orange-500 mr-2"></i>
+                    Recent Emergency Alerts
+                </h3>
+                <div class="space-y-3" id="emergencyAlerts">
+                    <div class="p-3 bg-red-50 border-l-4 border-red-500 rounded">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-semibold text-red-800">Chest Pain - High Priority</p>
+                                <p class="text-sm text-red-600">Patient ID: P-1001 | Room 205</p>
+                            </div>
+                            <span class="text-xs text-red-500">2 min ago</span>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-yellow-50 border-l-4 border-yellow-500 rounded">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-semibold text-yellow-800">Irregular Heartbeat</p>
+                                <p class="text-sm text-yellow-600">Patient ID: P-2045 | Room 312</p>
+                            </div>
+                            <span class="text-xs text-yellow-500">15 min ago</span>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-orange-50 border-l-4 border-orange-500 rounded">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-semibold text-orange-800">Hypertension Alert</p>
+                                <p class="text-sm text-orange-600">Patient ID: P-3021 | Room 108</p>
+                            </div>
+                            <span class="text-xs text-orange-500">32 min ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-bold mb-4 flex items-center">
+                    <i class="fas fa-calendar-check text-green-500 mr-2"></i>
+                    Upcoming Appointments
+                </h3>
+                <div class="space-y-3" id="upcomingAppointments">
+                    <div class="p-3 bg-blue-50 border-l-4 border-blue-500 rounded">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-semibold text-blue-800">Dr. Smith - Consultation</p>
+                                <p class="text-sm text-blue-600">Patient: John Doe | 10:30 AM</p>
+                            </div>
+                            <span class="text-xs text-blue-500">Next</span>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-green-50 border-l-4 border-green-500 rounded">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-semibold text-green-800">Dr. Johnson - Follow-up</p>
+                                <p class="text-sm text-green-600">Patient: Mary Wilson | 11:00 AM</p>
+                            </div>
+                            <span class="text-xs text-green-500">30 min</span>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-purple-50 border-l-4 border-purple-500 rounded">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-semibold text-purple-800">Dr. Davis - Surgery Prep</p>
+                                <p class="text-sm text-purple-600">Patient: Robert Brown | 2:00 PM</p>
+                            </div>
+                            <span class="text-xs text-purple-500">3.5 hrs</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mt-8 bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-lg font-bold mb-4 flex items-center">
+                <i class="fas fa-tools text-gray-600 mr-2"></i>
+                Hospital Management Tools
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button class="bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors">
+                    <i class="fas fa-bed mb-2 text-xl block"></i>
+                    Bed Management
+                </button>
+                <button class="bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg transition-colors">
+                    <i class="fas fa-user-md mb-2 text-xl block"></i>
+                    Staff Schedule
+                </button>
+                <button class="bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg transition-colors">
+                    <i class="fas fa-chart-bar mb-2 text-xl block"></i>
+                    Analytics
+                </button>
+                <button class="bg-orange-600 hover:bg-orange-700 text-white py-3 px-4 rounded-lg transition-colors">
+                    <i class="fas fa-cog mb-2 text-xl block"></i>
+                    Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./static/hospital_dashboard.js"></script>
+</body>
+</html>
