@@ -1,138 +1,84 @@
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import SystemMessage, HumanMessage
-import json
-from datetime import datetime
+from langchain_core.messages import AIMessage
+from models.state import AgentState
+import time
+
 
 class ClinicalDocsAgent:
+    """LangGraph Clinical Documentation Agent for medical records and reports"""
+    
     def __init__(self):
-        self.llm = ChatOpenAI(model="gpt-4", temperature=0)
-        self.system_prompt = """You are a clinical documentation specialist for cardiology.
-        
-        You can help with:
-        - Generating clinical summaries
-        - Organizing test results
-        - Creating discharge instructions  
-        - Summarizing patient interactions
-        - Preparing referral documentation
-        
-        Maintain HIPAA compliance and medical accuracy in all documentation.
-        Use proper medical terminology and follow clinical documentation standards.
-        """
+        self.llm = ChatOpenAI(model="gpt-4", temperature=0.1)
+        self.name = "clinical_docs_agent"
     
-    def generate_clinical_summary(self, patient_data: dict, interaction_history: list) -> dict:
-        """Generate clinical summary from patient interaction"""
+    def __call__(self, state: AgentState) -> AgentState:
+        """Generate clinical documentation and reports"""
+        start_time = time.time()
         
-        messages = [
-            SystemMessage(content=self.system_prompt),
-            HumanMessage(content=f"""
-            Patient Data: {json.dumps(patient_data)}
-            Interaction History: {json.dumps(interaction_history)}
+        try:
+            # Generate clinical documentation
+            response_message = self._generate_clinical_documentation(state)
             
-            Generate a clinical summary including:
-            1. Chief complaint/reason for interaction
-            2. Relevant medical history
-            3. Assessment findings
-            4. Recommendations made
-            5. Follow-up actions needed
+            # Update state
+            processing_time = time.time() - start_time
             
-            Format as structured medical documentation.
-            """)
-        ]
-        
-        response = self.llm.invoke(messages)
-        
-        return {
-            "summary": response.content,
-            "generated_date": datetime.now().isoformat(),
-            "summary_type": "clinical_interaction",
-            "patient_id": patient_data.get('patient_id', 'unknown')
-        }
+            return {
+                **state,
+                "current_agent": "clinical_docs_agent",
+                "clinical_context": {
+                    "documentation_generated": True,
+                    "report_type": "consultation_summary"
+                },
+                "clinical_notes": state.get("clinical_notes", []) + 
+                                ["Clinical documentation generated"],
+                "tools_used": state.get("tools_used", []) + ["clinical_docs"],
+                "processing_time": processing_time,
+                "workflow_complete": True,
+                "messages": state["messages"] + [AIMessage(content=response_message)]
+            }
+            
+        except Exception as e:
+            return self._create_error_response(state, f"Documentation error: {str(e)}")
     
-    def create_discharge_instructions(self, patient_data: dict, procedure_type: str) -> dict:
-        """Create post-procedure discharge instructions"""
+    def _generate_clinical_documentation(self, state: AgentState) -> str:
+        """Generate clinical documentation based on session"""
         
-        messages = [
-            SystemMessage(content=self.system_prompt),
-            HumanMessage(content=f"""
-            Patient: {json.dumps(patient_data)}
-            Procedure: {procedure_type}
-            
-            Create comprehensive discharge instructions including:
-            1. Activity restrictions
-            2. Medication instructions
-            3. Warning signs to watch for
-            4. Follow-up appointment scheduling
-            5. Emergency contact information
-            
-            Make instructions clear and patient-friendly.
-            """)
-        ]
+        patient_id = state.get("patient_id", "Unknown")
+        urgency = state.get("urgency_level", "Not assessed")
+        clinical_notes = state.get("clinical_notes", [])
         
-        response = self.llm.invoke(messages)
-        
-        return {
-            "instructions": response.content,
-            "procedure_type": procedure_type,
-            "created_date": datetime.now().isoformat(),
-            "patient_id": patient_data.get('patient_id', 'unknown')
-        }
+        return f"""
+📋 CLINICAL CONSULTATION SUMMARY
+
+Patient ID: {patient_id}
+Consultation Date: Today
+Urgency Level: {urgency}
+
+CLINICAL NOTES:
+{chr(10).join(f"• {note}" for note in clinical_notes) if clinical_notes else "• No specific clinical notes recorded"}
+
+ASSESSMENT:
+• Patient consulted with AI cardiology system
+• Appropriate triage and routing completed
+• Recommendations provided based on urgency level
+
+PLAN:
+• Follow recommended medical advice
+• Continue monitoring as appropriate
+• Return for follow-up as scheduled
+
+This documentation has been generated by the Cardiology AI system.
+All recommendations should be reviewed by qualified medical personnel.
+"""
     
-    def format_test_results(self, test_data: dict, patient_context: dict) -> dict:
-        """Format and interpret test results for patient communication"""
-        
-        messages = [
-            SystemMessage(content=self.system_prompt),
-            HumanMessage(content=f"""
-            Test Results: {json.dumps(test_data)}
-            Patient Context: {json.dumps(patient_context)}
-            
-            Create patient-friendly interpretation of test results including:
-            1. Summary of what tests were performed
-            2. Key findings in understandable language
-            3. What results mean for patient's health
-            4. Any recommended actions
-            5. Questions patient should ask their doctor
-            
-            Balance accuracy with readability.
-            """)
-        ]
-        
-        response = self.llm.invoke(messages)
-        
+    def _create_error_response(self, state: AgentState, error_message: str) -> AgentState:
+        """Create error response state"""
         return {
-            "interpretation": response.content,
-            "test_type": test_data.get('test_type', 'unknown'),
-            "results_date": datetime.now().isoformat(),
-            "patient_id": patient_context.get('patient_id', 'unknown')
-        }
-    
-    def generate_referral_note(self, patient_data: dict, referral_reason: str, specialist_type: str) -> dict:
-        """Generate referral documentation"""
-        
-        messages = [
-            SystemMessage(content=self.system_prompt),
-            HumanMessage(content=f"""
-            Patient: {json.dumps(patient_data)}
-            Referral Reason: {referral_reason}
-            Specialist Type: {specialist_type}
-            
-            Generate professional referral note including:
-            1. Patient demographics and relevant history
-            2. Reason for referral
-            3. Specific questions for specialist
-            4. Relevant test results or findings
-            5. Urgency level
-            
-            Use formal medical referral format.
-            """)
-        ]
-        
-        response = self.llm.invoke(messages)
-        
-        return {
-            "referral_note": response.content,
-            "specialist_type": specialist_type,
-            "referral_reason": referral_reason,
-            "created_date": datetime.now().isoformat(),
-            "patient_id": patient_data.get('patient_id', 'unknown')
+            **state,
+            "current_agent": "clinical_docs_agent",
+            "workflow_complete": True,
+            "requires_human_review": True,
+            "messages": state.get("messages", []) + [AIMessage(
+                content=f"Documentation Error: {error_message}. Please contact support."
+            )]
         }

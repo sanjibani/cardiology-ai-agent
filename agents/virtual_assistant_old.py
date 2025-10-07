@@ -1,136 +1,95 @@
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import SystemMessage, HumanMessage
-import json
+from langchain_core.messages import AIMessage
+from models.state import AgentState
+import time
+from typing import Dict, Any
+
 
 class VirtualAssistantAgent:
+    """LangGraph Virtual Assistant Agent for patient education and support"""
+    
     def __init__(self):
         self.llm = ChatOpenAI(model="gpt-4", temperature=0.3)
-        self.system_prompt = """You are a virtual cardiology assistant providing patient education and support.
-        
-        You can help with:
-        - Medication information and side effects
-        - Pre and post-procedure care instructions
-        - General cardiac health education
-        - Lifestyle recommendations
-        - Diet and exercise guidance for cardiac patients
-        
-        IMPORTANT: Never provide emergency medical advice. Always direct emergencies to call 911.
-        Never diagnose conditions or change medication dosages.
-        Always recommend consulting with their cardiologist for specific medical questions.
-        """
-        
-        # Load knowledge base
-        self.knowledge_base = self._load_knowledge_base()
+        self.name = "virtual_assistant_agent"
     
-    def _load_knowledge_base(self) -> dict:
-        """Load cardiology knowledge base"""
+    def __call__(self, state: AgentState) -> AgentState:
+        """Provide patient education and general assistance"""
+        start_time = time.time()
+        
         try:
-            with open('/Users/sanjibanichoudhury/Desktop/repositories/cardiology-ai-agent/data/cardiology_knowledge_base.json', 'r') as f:
-                return json.load(f)
-        except FileNotFoundError:
+            # Generate educational response based on context
+            response_message = self._generate_educational_response(state)
+            
+            # Update state
+            processing_time = time.time() - start_time
+            
             return {
-                "medications": {},
-                "procedures": {},
-                "conditions": {},
-                "lifestyle": {}
+                **state,
+                "current_agent": "virtual_assistant_agent",
+                "virtual_assistant_context": {
+                    "education_provided": True,
+                    "topics_covered": ["general_cardiology", "lifestyle"]
+                },
+                "tools_used": state.get("tools_used", []) + ["knowledge_base"],
+                "processing_time": processing_time,
+                "workflow_complete": True,
+                "messages": state["messages"] + [AIMessage(content=response_message)]
             }
-    
-    def provide_assistance(self, query: str, patient_data: dict) -> dict:
-        """Provide educational assistance and information"""
-        
-        # Check if query relates to specific areas in knowledge base
-        relevant_info = self._find_relevant_info(query)
-        
-        messages = [
-            SystemMessage(content=self.system_prompt),
-            HumanMessage(content=f"""
-            Patient Query: {query}
-            Patient Background: {json.dumps(patient_data)}
-            Relevant Knowledge: {json.dumps(relevant_info)}
             
-            Provide helpful, educational information. Include:
-            1. Direct answer to their question
-            2. Additional relevant education
-            3. When to contact their cardiologist
-            4. Any lifestyle recommendations
-            
-            Keep response conversational and supportive.
-            """)
-        ]
-        
-        response = self.llm.invoke(messages)
-        
-        return {
-            "response": response.content,
-            "category": self._categorize_query(query),
-            "educational_resources": self._get_educational_resources(query),
-            "follow_up_recommended": self._needs_follow_up(query)
-        }
+        except Exception as e:
+            return self._create_error_response(state, f"Assistant error: {str(e)}")
     
-    def _find_relevant_info(self, query: str) -> dict:
-        """Find relevant information from knowledge base"""
-        query_lower = query.lower()
-        relevant = {}
+    def _generate_educational_response(self, state: AgentState) -> str:
+        """Generate educational content based on session context"""
         
-        # Simple keyword matching - in production, use semantic search
-        for category, items in self.knowledge_base.items():
-            relevant[category] = {}
-            for key, value in items.items():
-                if any(keyword in query_lower for keyword in key.lower().split()):
-                    relevant[category][key] = value
+        urgency = state.get("urgency_level", "routine")
+        triage_result = state.get("triage_result", {})
         
-        return relevant
-    
-    def _categorize_query(self, query: str) -> str:
-        """Categorize the type of query"""
-        query_lower = query.lower()
-        
-        if any(word in query_lower for word in ['medication', 'pill', 'dose', 'drug']):
-            return 'medication'
-        elif any(word in query_lower for word in ['procedure', 'test', 'surgery', 'catheter']):
-            return 'procedure'
-        elif any(word in query_lower for word in ['diet', 'exercise', 'lifestyle', 'activity']):
-            return 'lifestyle'
-        elif any(word in query_lower for word in ['symptom', 'pain', 'chest', 'breath']):
-            return 'symptoms'
+        if urgency == "routine":
+            return """
+💡 CARDIOLOGY HEALTH EDUCATION
+
+Thank you for using our Cardiology AI system. Here are some general heart health tips:
+
+🫀 HEART HEALTH BASICS:
+• Maintain a balanced diet low in saturated fats
+• Exercise regularly (aim for 150 min/week moderate activity)  
+• Monitor blood pressure and cholesterol levels
+• Avoid smoking and limit alcohol consumption
+• Manage stress through relaxation techniques
+
+📋 MEDICATION ADHERENCE:
+• Take medications as prescribed
+• Don't stop cardiac medications without consulting your doctor
+• Keep a medication list updated
+• Set reminders for consistent timing
+
+⚠️ WHEN TO SEEK HELP:
+• New or worsening chest pain
+• Severe shortness of breath
+• Dizziness or fainting
+• Rapid or irregular heartbeat
+
+Remember: This AI system provides educational information only. 
+Always consult your healthcare provider for medical decisions.
+"""
         else:
-            return 'general'
+            return """
+Thank you for using our Cardiology AI system. Please follow the medical 
+recommendations provided and contact your healthcare provider as advised.
+
+If you have any additional questions about your heart health, 
+feel free to ask our virtual assistant anytime.
+"""
     
-    def _get_educational_resources(self, query: str) -> list:
-        """Get relevant educational resources"""
-        category = self._categorize_query(query)
-        
-        resources = {
-            'medication': [
-                'American Heart Association - Cardiovascular Medications',
-                'FDA Drug Information Database'
-            ],
-            'procedure': [
-                'American College of Cardiology - Patient Procedures',
-                'Heart Procedure Education Videos'
-            ],
-            'lifestyle': [
-                'AHA Heart-Healthy Living Guidelines',
-                'Cardiac Rehabilitation Programs'
-            ],
-            'symptoms': [
-                'When to Seek Emergency Care',
-                'Understanding Heart Symptoms'
-            ],
-            'general': [
-                'American Heart Association Patient Resources',
-                'Heart.org Patient Education'
-            ]
+    def _create_error_response(self, state: AgentState, error_message: str) -> AgentState:
+        """Create error response state"""
+        return {
+            **state,
+            "current_agent": "virtual_assistant_agent",
+            "workflow_complete": True,
+            "requires_human_review": True,
+            "messages": state.get("messages", []) + [AIMessage(
+                content=f"Assistant Error: {error_message}. Please contact support."
+            )]
         }
-        
-        return resources.get(category, resources['general'])
-    
-    def _needs_follow_up(self, query: str) -> bool:
-        """Determine if query needs medical follow-up"""
-        urgent_keywords = [
-            'pain', 'chest', 'breathing', 'dizzy', 'faint', 
-            'medication change', 'side effect', 'emergency'
-        ]
-        
-        query_lower = query.lower()
-        return any(keyword in query_lower for keyword in urgent_keywords)

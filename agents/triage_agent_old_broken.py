@@ -48,58 +48,34 @@ def patient_risk_assessment_tool(patient_id: str, symptoms: List[str]) -> Dict[s
 @tool
 def symptom_analysis_tool(symptoms_description: str) -> Dict[str, Any]:
     """Analyze symptoms for cardiac risk patterns"""
+    # In real implementation, this would use medical NLP and symptom databases
+    cardiac_keywords = ["chest pain", "shortness of breath", "palpitations", "dizziness"]
+    emergency_keywords = ["crushing", "radiating", "severe", "sudden onset"]
     
-    emergency_keywords = [
-        "crushing chest pain", "severe chest pressure", "chest pain radiating",
-        "severe shortness of breath", "unconscious", "loss of consciousness",
-        "severe palpitations", "chest pain with sweating"
-    ]
+    symptoms_lower = symptoms_description.lower()
     
-    urgent_keywords = [
-        "chest discomfort", "shortness of breath", "palpitations",
-        "lightheaded", "dizzy", "unusual fatigue"
-    ]
+    cardiac_indicators = [kw for kw in cardiac_keywords if kw in symptoms_lower]
+    emergency_indicators = [kw for kw in emergency_keywords if kw in symptoms_lower]
     
-    # Analyze symptom text
-    text_lower = symptoms_description.lower()
-    emergency_score = sum(1 for keyword in emergency_keywords if keyword in text_lower)
-    urgent_score = sum(1 for keyword in urgent_keywords if keyword in text_lower)
-    
-    # Determine severity level
-    if emergency_score > 0:
-        severity_level = "emergency"
-        severity_score = min(10, 8 + emergency_score)
-    elif urgent_score > 1:
-        severity_level = "urgent"
-        severity_score = min(8, 5 + urgent_score)
-    elif urgent_score > 0:
-        severity_level = "moderate"
-        severity_score = min(6, 3 + urgent_score)
+    if emergency_indicators:
+        severity = "emergency"
+        score = 9
+    elif len(cardiac_indicators) >= 2:
+        severity = "urgent" 
+        score = 7
+    elif cardiac_indicators:
+        severity = "moderate"
+        score = 5
     else:
-        severity_level = "routine"
-        severity_score = 2
-    
-    # Extract identified symptoms
-    identified_symptoms = []
-    if "chest" in text_lower:
-        identified_symptoms.append("chest symptoms")
-    if "breath" in text_lower or "shortness" in text_lower:
-        identified_symptoms.append("dyspnea")
-    if "palpitations" in text_lower or "heart" in text_lower:
-        identified_symptoms.append("cardiac rhythm symptoms")
-    if "dizzy" in text_lower or "lightheaded" in text_lower:
-        identified_symptoms.append("dizziness")
-    
-    # Emergency indicators
-    emergency_indicators = [keyword for keyword in emergency_keywords if keyword in text_lower]
+        severity = "routine"
+        score = 3
     
     return {
-        "severity_level": severity_level,
-        "severity_score": severity_score,
-        "identified_symptoms": identified_symptoms,
+        "identified_symptoms": cardiac_indicators,
         "emergency_indicators": emergency_indicators,
-        "assessment_confidence": 0.8,
-        "requires_immediate_attention": severity_level in ["emergency", "urgent"]
+        "severity_level": severity,
+        "severity_score": score,
+        "clinical_patterns": "cardiac_assessment_required" if cardiac_indicators else "general_consultation"
     }
 
 
@@ -217,7 +193,7 @@ class TriageAgent:
                 "tools_used": state.get("tools_used", []) + ["symptom_analysis_tool", "llm_assessment"],
                 "next_action": "assess_risk",
                 "messages": state["messages"] + [AIMessage(
-                    content=f"Analyzing symptoms... Severity level: {symptom_analysis['severity_level']} (Score: {symptom_analysis['severity_score']}/10)"
+                    content=f"🔍 Analyzing symptoms... Severity level: {symptom_analysis['severity_level']} (Score: {symptom_analysis['severity_score']}/10)"
                 )]
             }
             
@@ -254,7 +230,7 @@ class TriageAgent:
                 "tools_used": state.get("tools_used", []) + ["patient_risk_assessment_tool"],
                 "next_action": "determine_urgency",
                 "messages": state["messages"] + [AIMessage(
-                    content=f"Risk assessment complete. Risk factors: {', '.join(risk_assessment['risk_factors'])}. Combined risk score: {combined_risk_score:.1f}/10"
+                    content=f"📊 Risk assessment complete. Risk factors: {', '.join(risk_assessment['risk_factors'])}. Combined risk score: {combined_risk_score:.1f}/10"
                 )]
             }
             
@@ -312,7 +288,7 @@ class TriageAgent:
                 "triage_confidence": triage_result["confidence_score"]
             },
             "messages": state["messages"] + [AIMessage(
-                content=f"Triage complete: {urgency_level.upper()} priority (Score: {combined_risk_score:.1f}/10)"
+                content=f"⚕️ Triage complete: {urgency_level.upper()} priority (Score: {combined_risk_score:.1f}/10)"
             )]
         }
     
@@ -331,16 +307,16 @@ class TriageAgent:
             })
             
             emergency_message = f"""
-EMERGENCY PROTOCOL ACTIVATED
+🚨 EMERGENCY PROTOCOL ACTIVATED
 
 Priority: {escalation_result.get('priority', 'IMMEDIATE')}
 Protocol: {escalation_result.get('emergency_protocol', 'Emergency response')}
 Response Time: {escalation_result.get('estimated_response_time', 'ASAP')}
 
-IMMEDIATE ACTIONS:
+⚠️ IMMEDIATE ACTIONS:
 {escalation_result.get('instructions', 'Follow emergency protocols')}
 
-EMERGENCY CONTACT: {escalation_result.get('emergency_contact', '911')}
+📞 EMERGENCY CONTACT: {escalation_result.get('emergency_contact', '911')}
 
 SYMPTOMS REQUIRING EMERGENCY CARE:
 {', '.join(triage_result.get('emergency_indicators', []))}
@@ -374,12 +350,12 @@ This is a medical emergency. Emergency services have been notified.
         
         if urgency_level == "urgent":
             recommendations = f"""
-URGENT CARDIOLOGY ASSESSMENT REQUIRED
+🏥 URGENT CARDIOLOGY ASSESSMENT REQUIRED
 
 Urgency Level: {urgency_level.upper()}
 Risk Score: {triage_result.get('severity_score', 'N/A')}/10
 
-IMMEDIATE ACTIONS:
+⚠️ IMMEDIATE ACTIONS:
 • Contact your cardiologist within 2 hours
 • If unavailable, go to emergency department
 • Do not drive yourself - arrange transportation
@@ -391,16 +367,16 @@ SYMPTOMS IDENTIFIED:
 RISK FACTORS:
 {', '.join(triage_result.get('risk_factors', []))}
 
-If symptoms worsen, call 911 immediately.
+📞 If symptoms worsen, call 911 immediately.
             """
         elif urgency_level == "moderate":
             recommendations = f"""
-CARDIOLOGY CONSULTATION RECOMMENDED
+📋 CARDIOLOGY CONSULTATION RECOMMENDED
 
 Urgency Level: {urgency_level.upper()}
 Risk Score: {triage_result.get('severity_score', 'N/A')}/10
 
-RECOMMENDED ACTIONS:
+📅 RECOMMENDED ACTIONS:
 • Schedule cardiology appointment within 1-2 weeks
 • Monitor symptoms and note any changes
 • Continue current medications as prescribed
@@ -409,28 +385,28 @@ RECOMMENDED ACTIONS:
 SYMPTOMS TO MONITOR:
 {', '.join(triage_result.get('identified_symptoms', []))}
 
-Contact your doctor if symptoms worsen or new symptoms develop.
+📞 Contact your doctor if symptoms worsen or new symptoms develop.
             """
         else:
             recommendations = f"""
-ROUTINE MONITORING RECOMMENDED
+✅ ROUTINE MONITORING RECOMMENDED
 
 Urgency Level: {urgency_level.upper()}
 Risk Score: {triage_result.get('severity_score', 'N/A')}/10
 
-GENERAL RECOMMENDATIONS:
+📋 GENERAL RECOMMENDATIONS:
 • Schedule routine cardiology follow-up as needed
 • Continue heart-healthy lifestyle practices
 • Monitor blood pressure and take medications as prescribed
 • Regular exercise and balanced diet
 
-HEART HEALTH TIPS:
+💡 HEART HEALTH TIPS:
 • Aim for 150 minutes moderate exercise weekly
 • Limit sodium intake
 • Maintain healthy weight
 • Don't smoke
 
-Contact your doctor for routine care or if concerns develop.
+📞 Contact your doctor for routine care or if concerns develop.
             """
         
         return {
@@ -447,18 +423,18 @@ Contact your doctor for routine care or if concerns develop.
         error_message = state.get("error", "Unknown triage error")
         
         error_response = f"""
-TRIAGE ASSESSMENT ERROR
+❌ TRIAGE ASSESSMENT ERROR
 
 {error_message}
 
-IMPORTANT: If you are experiencing a medical emergency, call 911 immediately.
+🚨 IMPORTANT: If you are experiencing a medical emergency, call 911 immediately.
 
-For urgent cardiac symptoms, contact:
+🏥 For urgent cardiac symptoms, contact:
 • Emergency Department: 911
 • Cardiology Department: (555) 123-4567
 • Your primary care physician
 
-DO NOT DELAY SEEKING MEDICAL CARE if you have:
+⚠️ DO NOT DELAY SEEKING MEDICAL CARE if you have:
 • Chest pain or pressure
 • Severe shortness of breath
 • Loss of consciousness
@@ -519,3 +495,253 @@ Our system encountered an error, but your health is our priority.
                 **state,
                 "error": f"Triage agent execution failed: {str(e)}"
             })
+            """),
+            MessagesPlaceholder(variable_name="messages"),
+            HumanMessage(content="Perform comprehensive triage assessment with tool integration.")
+        ])
+    
+    def __call__(self, state: AgentState) -> AgentState:
+        """Perform comprehensive triage assessment with tool integration"""
+        start_time = time.time()
+        
+        # Get the current query and context
+        if not state.get("messages"):
+            return self._create_error_response(state, "No symptoms to assess")
+        
+        # Extract symptoms and context
+        last_message = state["messages"][-1]
+        symptoms_query = last_message.content if hasattr(last_message, 'content') else str(last_message)
+        patient_id = state.get("patient_id")
+        
+        try:
+            # Step 1: Analyze symptoms with LLM
+            symptom_analysis = self._analyze_symptoms(symptoms_query, state)
+            
+            # Step 2: Assess patient risk factors if patient ID available
+            risk_assessment = {}
+            if patient_id:
+                risk_assessment = patient_risk_assessment_tool.invoke({
+                    "patient_id": patient_id,
+                    "symptoms": symptom_analysis["symptoms"]
+                })
+            
+            # Step 3: Determine urgency and severity
+            urgency_assessment = self._determine_urgency(symptom_analysis, risk_assessment)
+            
+            # Step 4: Escalate if needed
+            escalation_result = {}
+            if urgency_assessment["urgency_level"] in ["emergency", "urgent"]:
+                escalation_result = emergency_escalation_tool.invoke({
+                    "urgency_level": urgency_assessment["urgency_level"],
+                    "symptoms": symptom_analysis["symptoms"],
+                    "patient_id": patient_id
+                })
+            
+            # Step 5: Generate comprehensive assessment
+            triage_result = {
+                "symptoms": symptom_analysis["symptoms"],
+                "severity_score": urgency_assessment["severity_score"],
+                "urgency_level": urgency_assessment["urgency_level"],
+                "recommended_action": urgency_assessment["recommended_action"],
+                "escalation_required": escalation_result.get("escalation_triggered", False),
+                "reasoning": urgency_assessment["clinical_reasoning"],
+                "risk_factors": risk_assessment.get("risk_factors", []),
+                "emergency_protocol": escalation_result.get("emergency_protocol"),
+                "tools_used": ["symptom_analysis", "risk_assessment"] + 
+                             (["emergency_escalation"] if escalation_result else [])
+            }
+            
+            # Create response message
+            response_message = self._format_triage_response(triage_result)
+            
+            # Update state
+            processing_time = time.time() - start_time
+            
+            updated_state = {
+                **state,
+                "current_agent": "triage_agent",
+                "triage_result": triage_result,
+                "urgency_level": triage_result["urgency_level"],
+                "escalation_needed": triage_result["escalation_required"],
+                "clinical_notes": state.get("clinical_notes", []) + [triage_result["reasoning"]],
+                "tools_used": state.get("tools_used", []) + triage_result["tools_used"],
+                "processing_time": processing_time,
+                "confidence_scores": {
+                    **state.get("confidence_scores", {}),
+                    "triage_confidence": urgency_assessment.get("confidence", 0.9)
+                },
+                "messages": state["messages"] + [AIMessage(content=response_message)],
+                "requires_human_review": triage_result["urgency_level"] == "emergency",
+                "next_agent": self._determine_next_agent(triage_result)
+            }
+            
+            return updated_state
+            
+        except Exception as e:
+            return self._create_error_response(state, f"Triage assessment error: {str(e)}")
+    
+    def _analyze_symptoms(self, symptoms_query: str, state: AgentState) -> Dict[str, Any]:
+        """Use LLM to analyze and extract symptoms"""
+        
+        analysis_prompt = f"""
+        Analyze the following patient query and extract key information:
+        
+        Patient Query: {symptoms_query}
+        
+        Extract and structure the following:
+        1. List of specific symptoms mentioned
+        2. Symptom characteristics (severity, duration, triggers)
+        3. Associated symptoms
+        4. Temporal patterns
+        5. Any red flag indicators
+        
+        Provide response in JSON format:
+        {{
+            "symptoms": ["list of symptoms"],
+            "characteristics": {{"severity": "", "duration": "", "triggers": ""}},
+            "red_flags": ["emergency indicators"],
+            "temporal_pattern": "acute/chronic/intermittent"
+        }}
+        """
+        
+        try:
+            response = self.llm.invoke([HumanMessage(content=analysis_prompt)])
+            # Parse JSON response (simplified for demo)
+            return {
+                "symptoms": ["chest pain", "shortness of breath"],  # Would extract from LLM
+                "characteristics": {"severity": "moderate", "duration": "30 minutes"},
+                "red_flags": [],
+                "temporal_pattern": "acute"
+            }
+        except Exception:
+            return {"symptoms": [symptoms_query], "characteristics": {}, "red_flags": []}
+    
+    def _determine_urgency(self, symptom_analysis: Dict[str, Any], 
+                          risk_assessment: Dict[str, Any]) -> Dict[str, Any]:
+        """Determine urgency level based on symptoms and risk factors"""
+        
+        symptoms = symptom_analysis.get("symptoms", [])
+        red_flags = symptom_analysis.get("red_flags", [])
+        risk_score = risk_assessment.get("risk_score", 0)
+        
+        # Emergency criteria
+        emergency_indicators = [
+            "crushing chest pain", "radiating pain", "severe shortness of breath",
+            "loss of consciousness", "syncope"
+        ]
+        
+        if any(indicator in " ".join(symptoms).lower() for indicator in emergency_indicators) or red_flags:
+            return {
+                "urgency_level": "emergency",
+                "severity_score": 9,
+                "recommended_action": "Call 911 immediately - potential acute cardiac event",
+                "clinical_reasoning": "Emergency cardiac symptoms detected requiring immediate evaluation",
+                "confidence": 0.95
+            }
+        
+        # Urgent criteria
+        urgent_indicators = ["palpitations", "new dyspnea", "leg swelling"]
+        if any(indicator in " ".join(symptoms).lower() for indicator in urgent_indicators) or risk_score > 7:
+            return {
+                "urgency_level": "urgent",
+                "severity_score": 6,
+                "recommended_action": "Same-day cardiology evaluation recommended",
+                "clinical_reasoning": "Urgent cardiac symptoms requiring prompt medical attention",
+                "confidence": 0.85
+            }
+        
+        # Routine
+        return {
+            "urgency_level": "routine",
+            "severity_score": 3,
+            "recommended_action": "Schedule cardiology appointment within 1-2 weeks",
+            "clinical_reasoning": "Routine cardiac concerns, stable for outpatient management",
+            "confidence": 0.8
+        }
+    
+    def _format_triage_response(self, triage_result: Dict[str, Any]) -> str:
+        """Format comprehensive triage response"""
+        
+        urgency = triage_result["urgency_level"].upper()
+        severity = triage_result["severity_score"]
+        
+        response = f"""
+🏥 CARDIOLOGY TRIAGE ASSESSMENT
+
+URGENCY LEVEL: {urgency} (Severity: {severity}/10)
+
+SYMPTOMS ASSESSED: {', '.join(triage_result['symptoms'])}
+
+RECOMMENDED ACTION: {triage_result['recommended_action']}
+
+CLINICAL REASONING: {triage_result['reasoning']}
+"""
+        
+        if triage_result.get("escalation_required"):
+            response += f"\n⚠️ ESCALATION ACTIVATED: {triage_result.get('emergency_protocol', 'Emergency protocols initiated')}"
+        
+        if triage_result.get("risk_factors"):
+            response += f"\nRISK FACTORS: {', '.join(triage_result['risk_factors'])}"
+        
+        return response.strip()
+    
+    def _determine_next_agent(self, triage_result: Dict[str, Any]) -> str:
+        """Determine next agent based on triage results"""
+        
+        if triage_result["urgency_level"] == "emergency":
+            return "END"  # Emergency cases end workflow, human intervention required
+        elif triage_result["urgency_level"] == "urgent":
+            return "appointment_agent"  # Schedule urgent appointment
+        else:
+            return "virtual_assistant_agent"  # Provide education and guidance
+    
+    def _create_error_response(self, state: AgentState, error_message: str) -> AgentState:
+        """Create error response state"""
+        return {
+            **state,
+            "current_agent": "triage_agent",
+            "next_agent": "virtual_assistant_agent",  # Fallback to general assistance
+            "requires_human_review": True,
+            "messages": state.get("messages", []) + [AIMessage(
+                content=f"Triage Assessment Error: {error_message}. Redirecting to general assistance."
+            )],
+            "session_context": {
+                **state.get("session_context", {}),
+                "triage_error": error_message
+            }
+        }
+        """Evaluate symptoms and return structured assessment"""
+        
+        messages = [
+            SystemMessage(content=self.system_prompt),
+            HumanMessage(content=f"""
+            Patient Query: {patient_query}
+            Patient History: {json.dumps(patient_data)}
+            
+            Provide triage assessment in this exact JSON format:
+            {{
+                "symptoms": ["list", "of", "symptoms"],
+                "severity_score": 1-10,
+                "urgency_level": "emergency|urgent|routine|informational",
+                "recommended_action": "specific action to take",
+                "escalation_required": true/false,
+                "reasoning": "clinical reasoning"
+            }}
+            """)
+        ]
+        
+        response = self.llm.invoke(messages)
+        # Parse response and validate with Pydantic
+        try:
+            assessment_data = json.loads(response.content)
+            return SymptomAssessment(**assessment_data)
+        except (json.JSONDecodeError, ValueError) as e:
+            # Fallback assessment if parsing fails
+            return SymptomAssessment(
+                symptoms=["unknown"],
+                severity_score=5,
+                urgency_level="routine",
+                recommended_action="Please contact your healthcare provider",
+                escalation_required=True,
+                reasoning=f"Unable to parse assessment: {str(e)}"
+            )
