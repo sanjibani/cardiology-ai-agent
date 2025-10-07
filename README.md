@@ -77,6 +77,54 @@ A sophisticated multi-agent system built with **LangGraph** and **LangChain** fo
 5. **Data Integration** → Access patient records and medical knowledge base
 6. **Response Generation** → Structured output delivered to user interface
 
+### 🤖 **LangGraph Multi-Agent Workflow**
+
+```mermaid
+graph TD
+    Start([User Query]) --> Supervisor{Supervisor Agent}
+    
+    Supervisor -->|Emergency Symptoms| Triage[Triage Agent]
+    Supervisor -->|Appointment Request| Appointment[Appointment Agent]
+    Supervisor -->|General Questions| VirtualAssistant[Virtual Assistant]
+    Supervisor -->|Documentation| ClinicalDocs[Clinical Docs Agent]
+    
+    Triage -->|Emergency| Emergency[🚨 Emergency Escalation]
+    Triage -->|Urgent| Appointment
+    Triage -->|Routine| VirtualAssistant
+    
+    Appointment -->|Scheduled| VirtualAssistant
+    Appointment -->|Complete| Complete[Workflow Complete]
+    
+    VirtualAssistant --> Complete
+    ClinicalDocs --> Complete
+    Emergency --> End([End - Human Review])
+    Complete --> End
+    
+    style Start fill:#e1f5fe
+    style Supervisor fill:#fff3e0
+    style Triage fill:#ffebee
+    style Appointment fill:#e8f5e8
+    style VirtualAssistant fill:#f3e5f5
+    style ClinicalDocs fill:#e3f2fd
+    style Emergency fill:#ff5252,color:#fff
+    style Complete fill:#4caf50,color:#fff
+    style End fill:#9e9e9e,color:#fff
+```
+
+**🔍 Agent Responsibilities:**
+- **Supervisor**: Intelligent query routing and workflow orchestration
+- **Triage**: Emergency detection, symptom assessment, risk stratification
+- **Appointment**: Smart scheduling with urgency-based prioritization
+- **Virtual Assistant**: Patient education, medication guidance, general support
+- **Clinical Docs**: Medical record generation, documentation, report creation
+
+**🌊 Reactive Features:**
+- **State Persistence**: Agents maintain conversation context and patient history
+- **Dynamic Routing**: Intelligent transitions between agents based on assessment results
+- **Tool Integration**: Automatic selection and chaining of specialized tools
+- **Emergency Escalation**: Real-time activation of emergency protocols
+- **Quality Monitoring**: Confidence scoring and processing time tracking
+
 ## 🚀 Quick Start
 
 ### Prerequisites

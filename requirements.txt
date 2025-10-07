@@ -4,6 +4,7 @@ langchain>=0.2.0
 langchain-openai>=0.1.0
 langchain-anthropic>=0.1.0
 langchain-core>=0.2.0
+langchain-community>=0.2.0
 
 # Web framework and API
 fastapi>=0.100.0
@@ -26,6 +27,8 @@ requests>=2.31.0
 numpy<2
 pandas>=2.0.0
 typing-extensions>=4.7.0
+cryptography>=41.0.0
 
 # Fix for httpx compatibility
+httpx>=0.24.0
 httpx>=0.27.0

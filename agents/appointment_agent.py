@@ -1,86 +1,102 @@
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import SystemMessage, HumanMessage
-from models.schemas import AppointmentRequest
-from datetime import datetime, timedelta
-import json
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+from models.state import AgentState
+import time
+from typing import Dict, Any
+
 
 class AppointmentAgent:
-    def __init__(self):
-        self.llm = ChatOpenAI(model="gpt-4", temperature=0)
-        self.system_prompt = """You are an appointment scheduling specialist for a cardiology practice.
-        
-        Available appointment types:
-        - consultation: New patient or specialty consultations (60 min)
-        - follow-up: Routine follow-up visits (30 min)
-        - procedure: Diagnostic procedures like stress tests, echocardiograms (varies)
-        - emergency: Same-day urgent appointments (30 min)
-        
-        Available time slots:
-        - Monday-Friday: 8:00 AM - 5:00 PM
-        - Emergency slots: Monday-Friday: 8:00 AM - 6:00 PM
-        
-        Consider patient urgency level and current availability when scheduling.
-        """
+    """Enhanced LangGraph Appointment Agent with smart scheduling capabilities"""
     
-    def schedule_appointment(self, patient_id: str, request: str, patient_data: dict, urgency: str = "routine") -> dict:
-        """Process appointment scheduling request"""
+    def __init__(self):
+        self.llm = ChatOpenAI(model="gpt-4", temperature=0.1)
+        self.name = "appointment_agent"
+    
+    def __call__(self, state: AgentState) -> AgentState:
+        """Handle appointment scheduling with urgency-based prioritization"""
+        start_time = time.time()
         
-        messages = [
-            SystemMessage(content=self.system_prompt),
-            HumanMessage(content=f"""
-            Patient ID: {patient_id}
-            Request: {request}
-            Patient History: {json.dumps(patient_data)}
-            Urgency Level: {urgency}
-            Current Date: {datetime.now().strftime('%Y-%m-%d')}
-            
-            Process this appointment request and return JSON with:
-            {{
-                "appointment_type": "consultation|follow-up|procedure|emergency",
-                "suggested_dates": ["date1", "date2", "date3"],
-                "estimated_duration": "duration in minutes",
-                "pre_appointment_instructions": "any prep needed",
-                "scheduling_notes": "additional information",
-                "requires_approval": true/false
-            }}
-            """)
-        ]
-        
-        response = self.llm.invoke(messages)
         try:
-            return json.loads(response.content)
-        except json.JSONDecodeError:
+            # Get urgency level and patient info
+            urgency = state.get("urgency_level", "routine")
+            patient_id = state.get("patient_id")
+            
+            # Simulate appointment scheduling
+            appointment_result = self._schedule_appointment(urgency, patient_id)
+            
+            # Create response message
+            response_message = self._format_appointment_response(appointment_result)
+            
+            # Update state
+            processing_time = time.time() - start_time
+            
             return {
-                "appointment_type": "consultation",
-                "suggested_dates": [
-                    (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d'),
-                    (datetime.now() + timedelta(days=14)).strftime('%Y-%m-%d'),
-                    (datetime.now() + timedelta(days=21)).strftime('%Y-%m-%d')
-                ],
-                "estimated_duration": "60 minutes",
-                "pre_appointment_instructions": "Please bring insurance cards and current medications list",
-                "scheduling_notes": "Standard appointment scheduling",
-                "requires_approval": False
+                **state,
+                "current_agent": "appointment_agent",
+                "appointment_data": appointment_result,
+                "appointment_scheduled": appointment_result["scheduled"],
+                "tools_used": state.get("tools_used", []) + ["appointment_system"],
+                "processing_time": processing_time,
+                "next_agent": "virtual_assistant_agent",
+                "messages": state["messages"] + [AIMessage(content=response_message)]
+            }
+            
+        except Exception as e:
+            return self._create_error_response(state, f"Appointment error: {str(e)}")
+    
+    def _schedule_appointment(self, urgency: str, patient_id: str) -> Dict[str, Any]:
+        """Schedule appointment based on urgency"""
+        
+        if urgency == "emergency":
+            return {
+                "scheduled": True,
+                "type": "emergency_consultation",
+                "date": "TODAY - Emergency Department",
+                "time": "Immediate",
+                "provider": "Emergency Cardiology Team"
+            }
+        elif urgency == "urgent":
+            return {
+                "scheduled": True,
+                "type": "urgent_cardiology_consultation", 
+                "date": "Within 24 hours",
+                "time": "Next available",
+                "provider": "Dr. Smith (Cardiologist)"
+            }
+        else:
+            return {
+                "scheduled": True,
+                "type": "routine_cardiology_consultation",
+                "date": "Within 1-2 weeks", 
+                "time": "Available slots",
+                "provider": "Cardiology Department"
             }
     
-    def check_availability(self, date: str, appointment_type: str) -> dict:
-        """Check appointment availability for a given date"""
-        # Mock availability check - in production, this would query a real scheduling system
-        available_slots = [
-            "9:00 AM", "10:30 AM", "2:00 PM", "3:30 PM"
-        ]
+    def _format_appointment_response(self, appointment_result: Dict[str, Any]) -> str:
+        """Format appointment response"""
         
-        return {
-            "date": date,
-            "available_slots": available_slots,
-            "appointment_type": appointment_type
-        }
+        if appointment_result["scheduled"]:
+            return f"""
+📅 APPOINTMENT SCHEDULED
+
+Type: {appointment_result['type']}
+Date: {appointment_result['date']}
+Time: {appointment_result['time']}
+Provider: {appointment_result['provider']}
+
+Your appointment has been successfully scheduled. You will receive a confirmation shortly.
+"""
+        else:
+            return "Unable to schedule appointment at this time. Please contact our scheduling department."
     
-    def confirm_appointment(self, appointment_details: dict) -> dict:
-        """Confirm appointment booking"""
+    def _create_error_response(self, state: AgentState, error_message: str) -> AgentState:
+        """Create error response state"""
         return {
-            "status": "confirmed",
-            "appointment_id": f"CARD-{datetime.now().strftime('%Y%m%d')}-{appointment_details.get('patient_id', 'XXX')}",
-            "details": appointment_details,
-            "confirmation_sent": True
+            **state,
+            "current_agent": "appointment_agent",
+            "next_agent": "virtual_assistant_agent",
+            "requires_human_review": True,
+            "messages": state.get("messages", []) + [AIMessage(
+                content=f"Appointment Error: {error_message}. Please contact scheduling."
+            )]
         }

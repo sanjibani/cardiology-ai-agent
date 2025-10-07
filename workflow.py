@@ -1,8 +1,9 @@
 from typing import Dict, Any, Optional
 import asyncio
-from langgraph.graph import StateGraph, END
+from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, AIMessage
+import time
 
 from models.state import AgentState
 from models.schemas import PatientQuery
@@ -10,43 +11,294 @@ from agents import (
     SupervisorAgent, TriageAgent, AppointmentAgent,
     VirtualAssistantAgent, ClinicalDocsAgent
 )
-from tools import (
-    PatientLookupTool, AppointmentSystemTool,
-    KnowledgeBaseTool, EmergencyEscalationTool
-)
+
 
 class CardiologyWorkflow:
-    """LangGraph workflow for coordinating cardiology agents"""
+    """Enhanced LangGraph workflow for coordinating cardiology agents with reactive capabilities"""
     
     def __init__(self):
-        # Initialize agents
+        # Initialize all agents
         self.supervisor = SupervisorAgent()
         self.triage_agent = TriageAgent()
         self.appointment_agent = AppointmentAgent()
         self.virtual_assistant = VirtualAssistantAgent()
         self.clinical_docs_agent = ClinicalDocsAgent()
         
-        # Initialize tools
-        self.patient_lookup = PatientLookupTool()
-        self.appointment_system = AppointmentSystemTool()
-        self.knowledge_base = KnowledgeBaseTool()
-        self.emergency_escalation = EmergencyEscalationTool()
-        
-        # Build the workflow graph
-        self.workflow = self._build_workflow()
+        # Build the reactive workflow graph
+        self.workflow = self._build_enhanced_workflow()
     
-    def _build_workflow(self) -> StateGraph:
-        """Build the LangGraph workflow"""
+    def _build_enhanced_workflow(self) -> StateGraph:
+        """Build the enhanced LangGraph workflow with proper agent routing"""
         
-        # Create the graph
+        # Create the graph with our comprehensive state
         workflow = StateGraph(AgentState)
         
-        # Add nodes for each agent
+        # Add all agent nodes
         workflow.add_node("supervisor", self._supervisor_node)
-        workflow.add_node("triage", self._triage_node)
-        workflow.add_node("appointment", self._appointment_node)
-        workflow.add_node("virtual_assistant", self._virtual_assistant_node)
-        workflow.add_node("clinical_docs", self._clinical_docs_node)
+        workflow.add_node("triage_agent", self._triage_node)
+        workflow.add_node("appointment_agent", self._appointment_node)
+        workflow.add_node("virtual_assistant_agent", self._virtual_assistant_node)
+        workflow.add_node("clinical_docs_agent", self._clinical_docs_node)
+        workflow.add_node("workflow_complete", self._completion_node)
+        
+        # Set entry point
+        workflow.set_entry_point("supervisor")
+        
+        # Define routing logic from supervisor
+        workflow.add_conditional_edges(
+            "supervisor",
+            self._route_from_supervisor,
+            {
+                "triage_agent": "triage_agent",
+                "appointment_agent": "appointment_agent", 
+                "virtual_assistant_agent": "virtual_assistant_agent",
+                "clinical_docs_agent": "clinical_docs_agent",
+                "end": END
+            }
+        )
+        
+        # Define routing from triage agent
+        workflow.add_conditional_edges(
+            "triage_agent",
+            self._route_from_triage,
+            {
+                "appointment_agent": "appointment_agent",
+                "virtual_assistant_agent": "virtual_assistant_agent",
+                "emergency_end": END,
+                "complete": "workflow_complete"
+            }
+        )
+        
+        # Define routing from appointment agent
+        workflow.add_conditional_edges(
+            "appointment_agent", 
+            self._route_from_appointment,
+            {
+                "virtual_assistant_agent": "virtual_assistant_agent",
+                "complete": "workflow_complete"
+            }
+        )
+        
+        # Virtual assistant and clinical docs typically end workflow
+        workflow.add_edge("virtual_assistant_agent", "workflow_complete")
+        workflow.add_edge("clinical_docs_agent", "workflow_complete")
+        workflow.add_edge("workflow_complete", END)
+        
+        return workflow.compile()
+    
+    def _supervisor_node(self, state: AgentState) -> AgentState:
+        """Execute supervisor agent"""
+        return self.supervisor(state)
+    
+    def _triage_node(self, state: AgentState) -> AgentState:
+        """Execute triage agent"""
+        return self.triage_agent(state)
+    
+    def _appointment_node(self, state: AgentState) -> AgentState:
+        """Execute appointment agent"""
+        return self.appointment_agent(state)
+    
+    def _virtual_assistant_node(self, state: AgentState) -> AgentState:
+        """Execute virtual assistant agent"""
+        return self.virtual_assistant(state)
+    
+    def _clinical_docs_node(self, state: AgentState) -> AgentState:
+        """Execute clinical documentation agent"""
+        return self.clinical_docs_agent(state)
+    
+    def _completion_node(self, state: AgentState) -> AgentState:
+        """Mark workflow as complete and provide summary"""
+        
+        # Generate workflow summary
+        agents_used = [transition["to_agent"] for transition in state.get("agent_transitions", [])]
+        tools_used = state.get("tools_used", [])
+        
+        summary_message = f"""
+🏥 Cardiology AI Consultation Complete
+
+WORKFLOW SUMMARY:
+- Agents Consulted: {', '.join(set(agents_used))}
+- Tools Used: {', '.join(set(tools_used))}
+- Processing Time: {state.get('processing_time', 0):.2f}s
+- Urgency Level: {state.get('urgency_level', 'Not assessed')}
+
+RECOMMENDATIONS:
+{self._generate_final_recommendations(state)}
+
+Thank you for using our Cardiology AI system. If you have additional questions or concerns, please don't hesitate to ask.
+"""
+        
+        return {
+            **state,
+            "workflow_complete": True,
+            "current_agent": "workflow_complete",
+            "messages": state["messages"] + [AIMessage(content=summary_message.strip())]
+        }
+    
+    def _route_from_supervisor(self, state: AgentState) -> str:
+        """Route from supervisor based on analysis"""
+        next_agent = state.get("next_agent")
+        
+        if next_agent in ["triage_agent", "appointment_agent", "virtual_assistant_agent", "clinical_docs_agent"]:
+            return next_agent
+        return "end"
+    
+    def _route_from_triage(self, state: AgentState) -> str:
+        """Route from triage based on urgency and results"""
+        urgency = state.get("urgency_level")
+        escalation_needed = state.get("escalation_needed", False)
+        
+        if urgency == "emergency":
+            return "emergency_end"  # End immediately for emergencies
+        elif escalation_needed or urgency == "urgent":
+            return "appointment_agent"  # Schedule urgent appointment
+        elif state.get("next_agent") == "virtual_assistant_agent":
+            return "virtual_assistant_agent"
+        else:
+            return "complete"
+    
+    def _route_from_appointment(self, state: AgentState) -> str:
+        """Route from appointment agent"""
+        if state.get("appointment_scheduled"):
+            return "virtual_assistant_agent"  # Provide follow-up education
+        return "complete"
+    
+    def _generate_final_recommendations(self, state: AgentState) -> str:
+        """Generate final recommendations based on workflow results"""
+        
+        recommendations = []
+        
+        # Triage recommendations
+        if state.get("triage_result"):
+            triage = state["triage_result"]
+            recommendations.append(f"- {triage.get('recommended_action', 'Follow standard care protocols')}")
+        
+        # Appointment recommendations
+        if state.get("appointment_data"):
+            appointment = state["appointment_data"]
+            if appointment.get("scheduled"):
+                recommendations.append(f"- Appointment scheduled for {appointment.get('date', 'TBD')}")
+        
+        # General recommendations
+        urgency = state.get("urgency_level")
+        if urgency == "emergency":
+            recommendations.append("- Seek immediate emergency medical attention")
+        elif urgency == "urgent":
+            recommendations.append("- Contact your cardiologist within 24 hours")
+        else:
+            recommendations.append("- Continue regular cardiac care routine")
+        
+        # Medication and lifestyle
+        if state.get("clinical_notes"):
+            recommendations.append("- Follow medication and lifestyle guidance provided")
+        
+        return "\\n".join(recommendations) if recommendations else "Continue standard care protocols"
+    
+    async def process_patient_query(self, patient_query: PatientQuery, 
+                                  session_context: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Process a patient query through the enhanced multi-agent workflow"""
+        
+        start_time = time.time()
+        
+        # Initialize comprehensive state
+        initial_state: AgentState = {
+            "messages": [HumanMessage(content=patient_query.query)],
+            "conversation_id": patient_query.conversation_id,
+            "session_context": session_context or {},
+            "patient_id": patient_query.patient_id,
+            "patient_data": None,
+            "query_type": None,
+            "original_query": patient_query.query,
+            "current_agent": None,
+            "next_agent": None,
+            "triage_result": None,
+            "appointment_data": None,
+            "clinical_context": None,
+            "virtual_assistant_context": None,
+            "urgency_level": None,
+            "escalation_needed": False,
+            "appointment_scheduled": False,
+            "requires_human_review": False,
+            "workflow_complete": False,
+            "tools_used": [],
+            "external_calls": [],
+            "clinical_notes": [],
+            "diagnosis_codes": [],
+            "medications_mentioned": [],
+            "conversation_history": [],
+            "agent_transitions": [],
+            "processing_time": 0.0,
+            "confidence_scores": {}
+        }
+        
+        try:
+            # Execute the workflow
+            result = await self.workflow.ainvoke(initial_state)
+            
+            # Calculate total processing time
+            total_time = time.time() - start_time
+            result["processing_time"] = total_time
+            
+            # Extract final response
+            final_message = result["messages"][-1].content if result["messages"] else "No response generated"
+            
+            # Return structured result
+            return {
+                "response": final_message,
+                "conversation_id": result.get("conversation_id"),
+                "urgency_level": result.get("urgency_level"),
+                "escalation_needed": result.get("escalation_needed", False),
+                "appointment_scheduled": result.get("appointment_scheduled", False),
+                "requires_human_review": result.get("requires_human_review", False),
+                "agents_consulted": [t["to_agent"] for t in result.get("agent_transitions", [])],
+                "tools_used": result.get("tools_used", []),
+                "clinical_notes": result.get("clinical_notes", []),
+                "processing_time": total_time,
+                "confidence_scores": result.get("confidence_scores", {}),
+                "session_context": result.get("session_context", {})
+            }
+            
+        except Exception as e:
+            return {
+                "response": f"System Error: {str(e)}. Please contact support.",
+                "error": str(e),
+                "requires_human_review": True,
+                "processing_time": time.time() - start_time
+            }
+    
+    def get_workflow_visualization(self) -> str:
+        """Generate Mermaid diagram for workflow visualization"""
+        return '''
+graph TD
+    Start([User Query]) --> Supervisor{Supervisor Agent}
+    
+    Supervisor -->|Emergency Symptoms| Triage[Triage Agent]
+    Supervisor -->|Appointment Request| Appointment[Appointment Agent]
+    Supervisor -->|General Questions| VirtualAssistant[Virtual Assistant]
+    Supervisor -->|Documentation| ClinicalDocs[Clinical Docs Agent]
+    
+    Triage -->|Emergency| Emergency[🚨 Emergency Escalation]
+    Triage -->|Urgent| Appointment
+    Triage -->|Routine| VirtualAssistant
+    
+    Appointment -->|Scheduled| VirtualAssistant
+    Appointment -->|Complete| Complete[Workflow Complete]
+    
+    VirtualAssistant --> Complete
+    ClinicalDocs --> Complete
+    Emergency --> End([End - Human Review])
+    Complete --> End
+    
+    style Start fill:#e1f5fe
+    style Supervisor fill:#fff3e0
+    style Triage fill:#ffebee
+    style Appointment fill:#e8f5e8
+    style VirtualAssistant fill:#f3e5f5
+    style ClinicalDocs fill:#e3f2fd
+    style Emergency fill:#ff5252,color:#fff
+    style Complete fill:#4caf50,color:#fff
+    style End fill:#9e9e9e,color:#fff
+'''
         
         # Define the routing logic
         workflow.add_conditional_edges(

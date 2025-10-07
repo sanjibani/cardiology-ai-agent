@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 import os
+import time
 from dotenv import load_dotenv
 
 from workflow import CardiologyWorkflow
@@ -81,27 +82,33 @@ class ChatResponse(BaseModel):
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
-    """Main chat endpoint for patient interactions"""
+    """Main chat endpoint for patient interactions using LangGraph workflow"""
     
     try:
-        # Create patient query
+        # Create patient query using new schema
         patient_query = PatientQuery(
             patient_id=request.patient_id,
-            query_text=request.message
+            query=request.message,
+            conversation_id=f"chat_{request.patient_id}_{int(time.time())}"
         )
         
-        # Process through workflow
-        result = await workflow.process_query(
+        # Process through enhanced LangGraph workflow
+        result = await workflow.process_patient_query(
             patient_query, 
             request.conversation_context or {}
         )
         
         return ChatResponse(
             response=result["response"],
-            agent_used=result["agent_used"],
-            structured_data=result.get("structured_data"),
-            requires_follow_up=result.get("requires_follow_up", False),
-            emergency_alert=result.get("emergency_alert", False)
+            agent_used=", ".join(result.get("agents_consulted", ["supervisor"])),
+            structured_data={
+                "urgency_level": result.get("urgency_level"),
+                "tools_used": result.get("tools_used", []),
+                "processing_time": result.get("processing_time", 0),
+                "confidence_scores": result.get("confidence_scores", {})
+            },
+            requires_follow_up=result.get("requires_human_review", False),
+            emergency_alert=result.get("escalation_needed", False)
         )
         
     except Exception as e:
@@ -112,10 +119,20 @@ async def triage_endpoint(request: ChatRequest):
     """Dedicated triage endpoint for symptom assessment"""
     
     try:
-        result = await workflow.run_triage_assessment(
-            request.patient_id,
-            request.message,
-            request.conversation_context or {}
+        # Create patient query for triage
+        patient_query = PatientQuery(
+            patient_id=request.patient_id,
+            query=request.message,
+            conversation_id=f"triage_{request.patient_id}_{int(time.time())}"
+        )
+        
+        # Process through workflow (will route to triage agent)
+        context = {"force_triage": True}
+        context.update(request.conversation_context or {})
+        
+        result = await workflow.process_patient_query(
+            patient_query,
+            context
         )
         
         return result

@@ -13,7 +13,8 @@ class SymptomAssessment(BaseModel):
 
 class PatientQuery(BaseModel):
     patient_id: str
-    query_text: str
+    query: str  # Changed from query_text to query
+    conversation_id: Optional[str] = None
     query_type: Optional[str] = None
     timestamp: datetime = Field(default_factory=datetime.now)
 
