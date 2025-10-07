@@ -7,7 +7,12 @@ A sophisticated multi-agent system built with **LangGraph** and **LangChain** fo
 ![Multi Agent](https://img.shields.io/badge/Architecture-Multi--Agent-purple)
 ![Web Interface](https://img.shields.io/badge/Interface-Web%20UI-orange)
 
-## 🎯 Key Features
+## � **Live Demo**
+🚀 **Try it now:** [https://cardiology-ai-agent.netlify.app/](https://cardiology-ai-agent.netlify.app/)
+
+*Static demo showcasing the user interfaces and system architecture. For full AI functionality, clone this repository and set up with your API keys.*
+
+## �🎯 Key Features
 
 ### 🤖 **AI-Powered Multi-Agent System**
 - **Intelligent Triage**: Emergency detection with automated escalation protocols
