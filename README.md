@@ -175,14 +175,14 @@ graph TD
 
 ## 🌐 User Interfaces
 
-### 🏠 **Landing Page** - `http://localhost:8000`
+### 🏠 **Landing Page** - `https://cardiology-ai-agent.netlify.app`
 **Purpose**: Main entry point and system overview
 - System architecture information
 - Interface selection cards
 - AI capabilities showcase
 - Technical specifications
 
-### 🏥 **Hospital Dashboard** - `http://localhost:8000/hospital`
+### 🏥 **Hospital Dashboard** - `https://cardiology-ai-agent.netlify.app/hospital`
 **Purpose**: For hospital administrators and management staff
 - **Real-time Statistics**: Patient counts, emergency cases, appointments
 - **Department Status**: ICU beds, surgery rooms, consultation availability
@@ -190,7 +190,7 @@ graph TD
 - **AI Performance**: System metrics and accuracy rates
 - **Resource Management**: Bed management, staff scheduling tools
 
-### 👤 **Patient Portal** - `http://localhost:8000/patient`
+### 👤 **Patient Portal** - `https://cardiology-ai-agent.netlify.app/patient`
 **Purpose**: For individual patients (Personal health management)
 - **Symptom Assessment**: AI-powered health evaluation
 - **Health Assistant**: 24/7 chat support for medical questions
@@ -198,7 +198,7 @@ graph TD
 - **Medical Records**: Personal health summary and medication tracking
 - **Quick Actions**: Medication reminders, report downloads
 
-### 👨‍⚕️ **Doctor Interface** - `http://localhost:8000/doctor`
+### 👨‍⚕️ **Doctor Interface** - `https://cardiology-ai-agent.netlify.app/doctor`
 **Purpose**: For healthcare providers (Clinical workflow support)
 - **Patient Consultation**: Load and review patient information
 - **AI Clinical Assistant**: Generate summaries, analyze medications, assess risks
@@ -206,7 +206,7 @@ graph TD
 - **Schedule Management**: Today's appointments and patient queue
 - **Emergency Alerts**: Doctor-specific urgent case notifications
 
-### 🚨 **Emergency Triage** - `http://localhost:8000/emergency`
+### 🚨 **Emergency Triage** - `https://cardiology-ai-agent.netlify.app/emergency`
 **Purpose**: For emergency department staff (Rapid assessment)
 - **Rapid Triage**: Fast symptom assessment with vital signs input
 - **Priority Classification**: Critical/Urgent/Routine categorization
